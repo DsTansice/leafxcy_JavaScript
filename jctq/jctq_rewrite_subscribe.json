@@ -10,46 +10,55 @@
   "rewrite": [
     {
     "match": "https://tq.xunsl.com/v17/NewTask/getTaskListByWeather.json",
+    "stage": "req",
     "target": "https://raw.githubusercontent.com/leafxcy/JavaScript/main/jctq/jctq_rewrite.js",
     "enable": true
     },
     {
     "match": "https://tq.xunsl.com/v5/CommonReward/toGetReward.json",
+    "stage": "req",
     "target": "https://raw.githubusercontent.com/leafxcy/JavaScript/main/jctq/jctq_rewrite.js",
     "enable": true
     },
     {
     "match": "https://tq.xunsl.com/v5/article/info.json",
+    "stage": "req",
     "target": "https://raw.githubusercontent.com/leafxcy/JavaScript/main/jctq/jctq_rewrite.js",
     "enable": true
     },
     {
     "match": "https://tq.xunsl.com/v5/article/detail.json",
+    "stage": "req",
     "target": "https://raw.githubusercontent.com/leafxcy/JavaScript/main/jctq/jctq_rewrite.js",
     "enable": true
     },
     {
     "match": "https://tq.xunsl.com/v5/user/stay.json",
+    "stage": "req",
     "target": "https://raw.githubusercontent.com/leafxcy/JavaScript/main/jctq/jctq_rewrite.js",
     "enable": true
     },
     {
     "match": "https://tq.xunsl.com/v5/nameless/adlickstart.json",
+    "stage": "req",
     "target": "https://raw.githubusercontent.com/leafxcy/JavaScript/main/jctq/jctq_rewrite.js",
     "enable": true
     },
     {
     "match": "https://tq.xunsl.com/v5/wechat/withdraw2.json",
+    "stage": "req",
     "target": "https://raw.githubusercontent.com/leafxcy/JavaScript/main/jctq/jctq_rewrite.js",
     "enable": true
     },
     {
     "match": "https://tq.xunsl.com/v5/Weather/giveBoxOnWeather.json",
+    "stage": "req",
     "target": "https://raw.githubusercontent.com/leafxcy/JavaScript/main/jctq/jctq_rewrite.js",
     "enable": true
     },
     {
     "match": "https://tq.xunsl.com/v5/weather/giveTimeInterval.json",
+    "stage": "req",
     "target": "https://raw.githubusercontent.com/leafxcy/JavaScript/main/jctq/jctq_rewrite.js",
     "enable": true
     }
@@ -64,8 +73,7 @@
             "job": {
                 "type": "runjs",
                 "target": "https://raw.githubusercontent.com/leafxcy/JavaScript/main/jctq/jctq_kkz.js"
-            },
-            "running": true
+            }
         },
         {
             "name": "晶彩天气文章视频",
@@ -74,8 +82,7 @@
             "job": {
                 "type": "runjs",
                 "target": "https://raw.githubusercontent.com/leafxcy/JavaScript/main/jctq/jctq_read.js"
-            },
-            "running": true
+            }
         },
         {
             "name": "晶彩天气日常任务",
@@ -84,8 +91,7 @@
             "job": {
                 "type": "runjs",
                 "target": "https://raw.githubusercontent.com/leafxcy/JavaScript/main/jctq/jctq_daily.js"
-            },
-            "running": true
+            }
         },
         {
             "name": "晶彩天气任务签到",
@@ -94,8 +100,7 @@
             "job": {
                 "type": "runjs",
                 "target": "https://raw.githubusercontent.com/leafxcy/JavaScript/main/jctq/jctq_reward.js"
-            },
-            "running": true
+            }
         }
     ]
   }
