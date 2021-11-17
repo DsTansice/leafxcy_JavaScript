@@ -1,0 +1,48 @@
+{
+  "name": "晶彩天气重写订阅",
+  "type": "rewrite",
+  "note": "仅供参考",
+  "author": "leaf",
+  "list": [
+        {
+            "name": "晶彩天气看看赚",
+            "type": "cron",
+            "time": "30 9,20 * * *",
+            "job": {
+                "type": "runjs",
+                "target": "https://raw.githubusercontent.com/leafxcy/JavaScript/main/jctq/jctq_kkz.js"
+            },
+            "running": true
+        },
+        {
+            "name": "晶彩天气文章视频",
+            "type": "cron",
+            "time": "20 7,18 * * *",
+            "job": {
+                "type": "runjs",
+                "target": "https://raw.githubusercontent.com/leafxcy/JavaScript/main/jctq/jctq_read.js"
+            },
+            "running": true
+        },
+        {
+            "name": "晶彩天气日常任务",
+            "type": "cron",
+            "time": "15,45 * * * *",
+            "job": {
+                "type": "runjs",
+                "target": "https://raw.githubusercontent.com/leafxcy/JavaScript/main/jctq/jctq_daily.js"
+            },
+            "running": true
+        },
+        {
+            "name": "晶彩天气任务签到",
+            "type": "cron",
+            "time": "30 22 * * *",
+            "job": {
+                "type": "runjs",
+                "target": "https://raw.githubusercontent.com/leafxcy/JavaScript/main/jctq/jctq_reward.js"
+            },
+            "running": true
+        }
+    ]
+}
