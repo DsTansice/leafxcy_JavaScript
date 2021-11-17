@@ -41,11 +41,11 @@ let rewardAmount = 0
             return
         }
         
-        /*for(let i=0; i<jctqLookStartbodyArr.length; i++) {
+        for(let i=0; i<jctqLookStartbodyArr.length; i++) {
             let lookStartBody = jctqLookStartbodyArr[i]
             await adlickstart(lookStartBody,i)
             await $.wait(200)
-        }*/
+        }
         
         await getBoxRewardConf()
         
