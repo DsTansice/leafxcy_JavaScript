@@ -19,13 +19,19 @@ let notifyStr = ''
 let rndtime = "" //毫秒
 let httpResult //global buffer
 
-let jctqWithdrawFlag = ($.isNode() ? process.env.jctqWithdrawFlag : $.getdata('jctqWithdrawFlag')) || 1;
-let jctqBoxbody =      ($.isNode() ? process.env.jctqBoxbody      : $.getdata('jctqBoxbody'))      || '';
-let jctqQdBody =       ($.isNode() ? process.env.jctqQdBody       : $.getdata('jctqQdBody'))       || '';
-let jctqWithdraw =     ($.isNode() ? process.env.jctqWithdraw     : $.getdata('jctqWithdraw'))     || '';
-let jctqCookie =       ($.isNode() ? process.env.jctqCookie       : $.getdata('jctqCookie'))       || '';
+let numBoxbody
+
+let jctqWithdrawFlag =   ($.isNode() ? process.env.jctqWithdrawFlag   : $.getdata('jctqWithdrawFlag'))   || 1;
+let jctqBoxbody =        ($.isNode() ? process.env.jctqBoxbody        : $.getdata('jctqBoxbody'))        || '';
+let jctqQdBody =         ($.isNode() ? process.env.jctqQdBody         : $.getdata('jctqQdBody'))         || '';
+let jctqSignDoubleBody = ($.isNode() ? process.env.jctqSignDoubleBody : $.getdata('jctqSignDoubleBody')) || '';
+let jctqWithdraw =       ($.isNode() ? process.env.jctqWithdraw       : $.getdata('jctqWithdraw'))       || '';
+let jctqCookie =         ($.isNode() ? process.env.jctqCookie         : $.getdata('jctqCookie'))         || '';
 
 let jctqRewardBodyArr = []
+let jctqSignDoubleBodyArr = []
+let jctqWithdrawArr = []
+let jctqCookieArr = []
 
 let withdrawSuccess = 0
 
@@ -41,7 +47,7 @@ let withdrawSuccess = 0
     {
         await checkEnv()
         
-        let numBoxbody = jctqRewardBodyArr.length
+        numBoxbody = jctqRewardBodyArr.length
         console.log(`找到${numBoxbody}个签到/奖励body`)
         
         for(let i=0; i<numBoxbody; i++) {
@@ -50,21 +56,40 @@ let withdrawSuccess = 0
             await $.wait(2000)
         }
         
-        if(jctqWithdraw > 0 && jctqWithdraw) {
-            await withdraw()
-            await $.wait(1000)
+        numBoxbody = jctqSignDoubleBodyArr.length
+        console.log(`找到${numBoxbody}个签到翻倍body`)
+        
+        for(let i=0; i<numBoxbody; i++) {
+            let rewardBody = jctqSignDoubleBodyArr[i]
+            await $.wait(32000)
+            await toDouble(rewardBody)
+        }
+        
+        if(jctqWithdraw > 0 && jctqWithdrawArr.length > 0) {
+            numBoxbody = jctqWithdrawArr.length
+            console.log(`找到${numBoxbody}个提现body`)
+            
+            for(let i=0; i<numBoxbody; i++) {
+                let withBody = jctqWithdrawArr[i]
+                await withdraw(withBody)
+                await $.wait(1000)
+            }
         } else if(jctqWithdraw == 0) {
             console.log(`你设置了不自动提现`)
-        } else if(!jctqWithdraw) {
+        } else if(jctqWithdrawArr.length == 0) {
             console.log(`没有找到提现body`)
         }
         
-        if(jctqCookie) {
-            await getBalance()
-            await showmsg()
-        } else {
-            console.log(`没有找到用户CK，无法统计今日收益`)
+        numBoxbody = jctqCookieArr.length
+        console.log(`找到${numBoxbody}个cookie`)
+        
+        for(let i=0; i<numBoxbody; i++) {
+            notifyStr += `\n============= 账户${i+1} =============\n`
+            await getBalance(jctqCookieArr[i])
+            await $.wait(1000)
         }
+        
+        await showmsg()
         
     }
   
@@ -91,26 +116,26 @@ async function showmsg() {
 async function checkEnv() {
     
     if(jctqCookie) {
-        if(jctqCookie.indexOf('@') > -1) {
-            jctqCookies = jctqCookie.split('@')
-            jctqCookie = jctqCookies[0]
-            console.log('检测到多于一个jctqCookie，开始跑第一个账户。请注意本脚本只支持单账户，如需多账户请自行修改。')
-        }
-        if(jctqCookie.indexOf('cookie=') == -1 && jctqCookie.indexOf('zqkey=') > -1) {
-            jctqCookie = jctqCookie.replace(/zqkey=/, "cookie=")
-        }
-        if(jctqCookie.indexOf('cookie_id=') == -1 && jctqCookie.indexOf('zqkey_id=') > -1) {
-            jctqCookie = jctqCookie.replace(/zqkey_id=/, "cookie_id=")
-        }
-        if(jctqCookie.indexOf('app_version=') == -1) {
-            jctqCookie = 'app_version=8.3.7&' + jctqCookie
+        if(jctqCookie.indexOf('&') > -1) {
+            let jctqCookies = jctqCookie.split('@')
+            for(let i=0; i<jctqCookies.length; i++) {
+                jctqCookieArr.push(replaceCookie(jctqCookies[i]))
+            }
+        } else {
+            
+            jctqCookieArr.push(replaceCookie(jctqCookie))
         }
     }
     
-    if(jctqWithdraw && jctqWithdraw.indexOf('@') > -1) {
-        jctqWithdraws = jctqWithdraw.split('@')
-        jctqWithdraw = jctqWithdraws[0]
-        console.log('检测到多于一个提现body，使用第一个body')
+    if(jctqWithdraw) {
+        if(jctqWithdraw.indexOf('&') > -1) {
+            let jctqWithdraws = jctqWithdraw.split('&')
+            for(let i=0; i<jctqWithdraws.length; i++) {
+                jctqWithdrawArr.push(jctqWithdraws[i])
+            }
+        } else {
+            jctqWithdrawArr.push(jctqWithdraw)
+        }
     }
     
     if(jctqQdBody) {
@@ -134,6 +159,30 @@ async function checkEnv() {
             jctqRewardBodyArr.push(jctqBoxbody)
         }
     }
+    
+    if(jctqSignDoubleBody) {
+        if(jctqSignDoubleBody.indexOf('&') > -1) {
+            let jctqSignDoubleBodys = jctqSignDoubleBody.split('&')
+            for(let i=0; i<jctqSignDoubleBodys.length; i++) {
+                jctqSignDoubleBodyArr.push(jctqSignDoubleBodys[i])
+            }
+        } else {
+            jctqSignDoubleBodyArr.push(jctqSignDoubleBody)
+        }
+    }
+}
+
+function replaceCookie(jctqCookieItem) {
+    if(jctqCookieItem.indexOf('cookie=') == -1 && jctqCookieItem.indexOf('zqkey=') > -1) {
+        jctqCookieItem = jctqCookieItem.replace(/zqkey=/, "cookie=")
+    }
+    if(jctqCookieItem.indexOf('cookie_id=') == -1 && jctqCookieItem.indexOf('zqkey_id=') > -1) {
+        jctqCookieItem = jctqCookieItem.replace(/zqkey_id=/, "cookie_id=")
+    }
+    if(jctqCookieItem.indexOf('app_version=') == -1) {
+        jctqCookieItem = 'app_version=8.3.7&' + jctqCookieItem
+    }
+    return jctqCookieItem
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -158,10 +207,28 @@ async function toGetReward(rewardBody,idx) {
     }
 }
 
-//今日收益
-async function getBalance() {
+//签到翻倍
+async function toDouble(rewardBody) {
     let caller = printCaller()
-    let url = 'https://tq.xunsl.com/wap/user/balance?keyword_wyq=woyaoq.com&' + jctqCookie
+    let url = 'https://tq.xunsl.com/v5/CommonReward/toDouble.json'
+    let urlObject = populatePostUrl(url,rewardBody)
+    await httpPost(urlObject,caller)
+    let result = httpResult;
+    if(!result) return
+    
+    if(result.success == true) {
+        if(result.items && result.items.score) {
+            console.log(`签到翻倍成功，获得${result.items.score}金币`)
+        }
+    } else {
+        console.log(`签到翻倍失败：${result.message}`)
+    }
+}
+
+//今日收益
+async function getBalance(cookie) {
+    let caller = printCaller()
+    let url = 'https://tq.xunsl.com/wap/user/balance?keyword_wyq=woyaoq.com&' + cookie
     let urlObject = populateGetUrl(url)
     await httpGet(urlObject,caller)
     let result = httpResult;
@@ -186,10 +253,10 @@ async function getBalance() {
 }
 
 //提现
-async function withdraw() {
+async function withdraw(withBody) {
     let caller = printCaller()
     let url = 'https://tq.xunsl.com/v5/wechat/withdraw2.json '
-    let urlObject = populatePostUrl(url,jctqWithdraw)
+    let urlObject = populatePostUrl(url,withBody)
     await httpPost(urlObject,caller)
     let result = httpResult;
     if(!result) return

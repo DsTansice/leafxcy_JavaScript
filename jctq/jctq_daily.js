@@ -16,10 +16,13 @@ let notifyStr = ''
 let rndtime = "" //毫秒
 let httpResult //global buffer
 
+let userCookie = ''
+
 let jctqCookie = ($.isNode() ? process.env.jctqCookie : $.getdata('jctqCookie')) || '';
 let jctqBubbleBody = ($.isNode() ? process.env.jctqBubbleBody : $.getdata('jctqBubbleBody')) || '';
 let jctqGiveBoxBody = ($.isNode() ? process.env.jctqGiveBoxBody : $.getdata('jctqGiveBoxBody')) || '';
 
+let jctqCookieArr = []
 let jctqBubbleBodyArr = []
 let jctqGiveBoxBodyArr = []
 
@@ -39,20 +42,28 @@ let refRotory = 'https://tq.xunsl.com/html/rotaryTable/index.html?keyword_wyq=wo
     {
         await checkEnv()
         
-        await queryShareStatus()
-        await $.wait(1000)
+        numBoxbody = jctqCookieArr.length
+        console.log(`找到${numBoxbody}个cookie`)
         
-        await queryGiveBoxStatus()
-        await $.wait(1000)
-        
-        await queryBubbleStatus()
-        await $.wait(1000)
-        
-        await getTaskListByWeather()
-        await $.wait(1000)
-        
-        await queryRotaryTable()
-        await $.wait(1000)
+        for(let i=0; i<numBoxbody; i++) {
+            console.log(`============= 账户${i+1} =============`)
+            userCookie = jctqCookieArr[i]
+            
+            await queryShareStatus()
+            await $.wait(1000)
+            
+            await queryGiveBoxStatus()
+            await $.wait(1000)
+            
+            await queryBubbleStatus()
+            await $.wait(1000)
+            
+            await getTaskListByWeather()
+            await $.wait(1000)
+            
+            await queryRotaryTable()
+            await $.wait(1000)
+        }
     }
   
 
@@ -78,19 +89,14 @@ async function showmsg() {
 async function checkEnv() {
     
     if(jctqCookie) {
-        if(jctqCookie.indexOf('@') > -1) {
-            jctqCookies = jctqCookie.split('@')
-            jctqCookie = jctqCookies[0]
-            console.log('检测到多于一个jctqCookie，开始跑第一个账户。请注意本脚本只支持单账户，如需多账户请自行修改。')
-        }
-        if(jctqCookie.indexOf('cookie=') == -1 && jctqCookie.indexOf('zqkey=') > -1) {
-            jctqCookie = jctqCookie.replace(/zqkey=/, "cookie=")
-        }
-        if(jctqCookie.indexOf('cookie_id=') == -1 && jctqCookie.indexOf('zqkey_id=') > -1) {
-            jctqCookie = jctqCookie.replace(/zqkey_id=/, "cookie_id=")
-        }
-        if(jctqCookie.indexOf('app_version=') == -1) {
-            jctqCookie = 'app_version=8.3.7&' + jctqCookie
+        if(jctqCookie.indexOf('&') > -1) {
+            let jctqCookies = jctqCookie.split('@')
+            for(let i=0; i<jctqCookies.length; i++) {
+                jctqCookieArr.push(replaceCookie(jctqCookies[i]))
+            }
+        } else {
+            
+            jctqCookieArr.push(replaceCookie(jctqCookie))
         }
     }
     
@@ -117,13 +123,26 @@ async function checkEnv() {
     }
 }
 
+function replaceCookie(jctqCookieItem) {
+    if(jctqCookieItem.indexOf('cookie=') == -1 && jctqCookieItem.indexOf('zqkey=') > -1) {
+        jctqCookieItem = jctqCookieItem.replace(/zqkey=/, "cookie=")
+    }
+    if(jctqCookieItem.indexOf('cookie_id=') == -1 && jctqCookieItem.indexOf('zqkey_id=') > -1) {
+        jctqCookieItem = jctqCookieItem.replace(/zqkey_id=/, "cookie_id=")
+    }
+    if(jctqCookieItem.indexOf('app_version=') == -1) {
+        jctqCookieItem = 'app_version=8.3.7&' + jctqCookieItem
+    }
+    return jctqCookieItem
+}
+
 ///////////////////////////////////////////////////////////////////
 
 //时段转发以及转发页面红包冷却查询 -- 30分钟一次
 async function queryShareStatus() {
     let caller = printCaller()
     let url = 'http://tq.xunsl.com/WebApi/ShareNew/bereadExtraList'
-    let urlObject = populatePostUrl(url,refHotShare,jctqCookie)
+    let urlObject = populatePostUrl(url,refHotShare,userCookie)
     await httpPost(urlObject,caller)
     let result = httpResult;
     if(!result) return
@@ -182,7 +201,7 @@ async function queryShareStatus() {
 async function getRewardShareBox() {
     let caller = printCaller()
     let url = 'http://tq.xunsl.com/WebApi/TimePacket/getReward'
-    let urlObject = populatePostUrl(url,refHotShare,jctqCookie)
+    let urlObject = populatePostUrl(url,refHotShare,userCookie)
     await httpPost(urlObject,caller)
     let result = httpResult;
     if(!result) return
@@ -198,7 +217,7 @@ async function getRewardShareBox() {
 async function listsNewTag() {
     let caller = printCaller()
     let url = 'http://tq.xunsl.com/WebApi/ArticleTop/listsNewTag'
-    let urlObject = populatePostUrl(url,refHotShare,jctqCookie)
+    let urlObject = populatePostUrl(url,refHotShare,userCookie)
     await httpPost(urlObject,caller)
     let result = httpResult;
     if(!result) return
@@ -219,7 +238,7 @@ async function listsNewTag() {
 async function getShareArticleReward(articleId) {
     let caller = printCaller()
     let url = 'http://tq.xunsl.com/WebApi/ShareNew/getShareArticleReward'
-    let reqBody = jctqCookie + '&article_id=' + articleId
+    let reqBody = userCookie + '&article_id=' + articleId
     let urlObject = populatePostUrl(url,refHotShare,reqBody)
     await httpPost(urlObject,caller)
     let result = httpResult;
@@ -238,7 +257,7 @@ async function getShareArticleReward(articleId) {
 async function execExtractTask(action,name) {
     let caller = printCaller()
     let url = 'http://tq.xunsl.com/WebApi/ShareNew/execExtractTask'
-    let reqBody = jctqCookie + '&action=' + action
+    let reqBody = userCookie + '&action=' + action
     let urlObject = populatePostUrl(url,refHotShare,reqBody)
     await httpPost(urlObject,caller)
     let result = httpResult;
@@ -254,7 +273,7 @@ async function execExtractTask(action,name) {
 //首页气泡红包查询
 async function queryBubbleStatus() {
     let caller = printCaller()
-    let url = 'https://tq.xunsl.com/v17/weather/index.json?' + jctqCookie
+    let url = 'https://tq.xunsl.com/v17/weather/index.json?' + userCookie
     let urlObject = populateGetUrl(url,refHotShare)
     await httpGet(urlObject,caller)
     let result = httpResult;
@@ -307,7 +326,7 @@ async function getRewardBubble(bubbleBodyItem) {
 //福利页面定时宝箱查询
 async function queryGiveBoxStatus() {
     let caller = printCaller()
-    let url = 'https://tq.xunsl.com/v17/Weather/getBoxByweather.json?' + jctqCookie
+    let url = 'https://tq.xunsl.com/v17/Weather/getBoxByweather.json?' + userCookie
     let urlObject = populateGetUrl(url,refHotShare)
     await httpGet(urlObject,caller)
     let result = httpResult;
@@ -367,7 +386,7 @@ async function queryRotaryTable() {
     rndtime = Math.floor(new Date().getTime())
     let caller = printCaller()
     let url = 'https://tq.xunsl.com/WebApi/RotaryTable/getData?_='+rndtime
-    let urlObject = populatePostUrl(url,refRotory,jctqCookie)
+    let urlObject = populatePostUrl(url,refRotory,userCookie)
     await httpPost(urlObject,caller)
     let result = httpResult;
     if(!result) return
@@ -404,7 +423,7 @@ async function chestReward(idx) {
     rndtime = Math.floor(new Date().getTime())
     let caller = printCaller()
     let url = 'https://tq.xunsl.com/WebApi/RotaryTable/chestReward?_='+rndtime
-    let reqBody = jctqCookie + '&num=' + idx
+    let reqBody = userCookie + '&num=' + idx
     let urlObject = populatePostUrl(url,refRotory,reqBody)
     await httpPost(urlObject,caller)
     let result = httpResult;
@@ -422,7 +441,7 @@ async function turnRotary() {
     rndtime = Math.floor(new Date().getTime())
     let caller = printCaller()
     let url = 'https://tq.xunsl.com/WebApi/RotaryTable/turnRotary?_='+rndtime
-    let urlObject = populatePostUrl(url,refRotory,jctqCookie)
+    let urlObject = populatePostUrl(url,refRotory,userCookie)
     await httpPost(urlObject,caller)
     let result = httpResult;
     if(!result) return
@@ -437,7 +456,7 @@ async function turnRotary() {
 //查询日常任务进度
 async function getTaskListByWeather() {
     let caller = printCaller()
-    let url = 'https://tq.xunsl.com/v17/NewTask/getTaskListByWeather.json?' + jctqCookie
+    let url = 'https://tq.xunsl.com/v17/NewTask/getTaskListByWeather.json?' + userCookie
     let urlObject = populateGetUrl(url,refHotShare)
     await httpGet(urlObject,caller)
     let result = httpResult;
@@ -465,7 +484,7 @@ async function getTaskListByWeather() {
 //刷福利视频
 async function recordVideoNum() {
     let caller = printCaller()
-    let url = 'https://tq.xunsl.com/V17/NewTask/recordNum.json?' + jctqCookie
+    let url = 'https://tq.xunsl.com/V17/NewTask/recordNum.json?' + userCookie
     let urlObject = populateGetUrl(url,refHotShare)
     await httpGet(urlObject,caller)
     let result = httpResult;
@@ -488,7 +507,7 @@ function populatePostUrl(url,referer,reqBody){
             'device-platform' : 'android',
             'Connection' : 'keep-alive',
             'app-type' : 'jcweather',
-            'Referer' : referer + jctqCookie,
+            'Referer' : referer + userCookie,
         },
         body: reqBody
     }
@@ -505,7 +524,7 @@ function populateGetUrl(url,referer){
             'device-platform' : 'android',
             'Connection' : 'keep-alive',
             'app-type' : 'jcweather',
-            'Referer' : referer + jctqCookie,
+            'Referer' : referer + userCookie,
         }
     }
     return urlObject;

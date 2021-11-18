@@ -3,20 +3,19 @@
 
 此脚本负责：捉包重写
 
-
-注意单脚本不支持多账户，建议多容器跑。如果需要多账户在同一个脚本跑，请自行修改
 脚本会自动提现，如果不想自动提现的，请不要捉提现body，或者新建环境变量jctqWithdrawFlag，写成0
 
 重写：
-https://tq.xunsl.com/v17/NewTask/getTaskListByWeather.json  -- 点开福利页即可获取jctqCookie，注意只支持单账户，新ck会覆盖旧ck
-https://tq.xunsl.com/v5/CommonReward/toGetReward.json       -- 签到，观看签到翻倍视频，和福利页任务奖励（目前应该只有激励视频和20篇文章的奖励），获取完建议关掉重写
+https://tq.xunsl.com/v17/NewTask/getTaskListByWeather.json  -- 点开福利页即可获取jctqCookie
+https://tq.xunsl.com/v5/CommonReward/toGetReward.json       -- 签到，和福利页任务奖励（目前应该只有激励视频和20篇文章的奖励），获取完建议关掉重写
 https://tq.xunsl.com/v5/article/info.json                   -- 点开文章获取文章body，获取完建议关掉重写
 https://tq.xunsl.com/v5/article/detail.json                 -- 点开视频获取视频body，获取完建议关掉重写
 https://tq.xunsl.com/v5/user/stay.json                      -- 阅读文章或者看视频一段时间后可以获取到时长body，获取完务必关掉重写
 https://tq.xunsl.com/v5/nameless/adlickstart.json           -- 点开看看赚获取body，可以一直开着，脚本会自动删除重复和失效body
 https://tq.xunsl.com/v5/Weather/giveBoxOnWeather.json       -- 点开福利页浮窗宝箱和观看翻倍视频获取body，获取完建议关掉重写
 https://tq.xunsl.com/v5/weather/giveTimeInterval.json       -- 点开首页气泡红包和观看翻倍视频获取body，获取完建议关掉重写
-https://tq.xunsl.com/v5/wechat/withdraw2.json               -- 提现一次对应金额获取body，新获取的提现body会覆盖旧的
+https://tq.xunsl.com/v5/wechat/withdraw2.json               -- 提现一次对应金额获取body
+https://tq.xunsl.com/v5/CommonReward/toDouble.json          -- 领取签到翻倍奖励后可获取
 
 任务：
 jctq_daily.js   -- 领转发页定时宝箱，领福利页定时宝箱，领首页气泡红包，时段转发，刷福利视频，抽奖5次
@@ -39,6 +38,7 @@ let jctqLookStartbody = ($.isNode() ? process.env.jctqLookStartbody : $.getdata(
 let jctqWithdraw = ($.isNode() ? process.env.jctqWithdraw : $.getdata('jctqWithdraw')) || '';
 let jctqBubbleBody = ($.isNode() ? process.env.jctqBubbleBody : $.getdata('jctqBubbleBody')) || '';
 let jctqGiveBoxBody = ($.isNode() ? process.env.jctqGiveBoxBody : $.getdata('jctqGiveBoxBody')) || '';
+let jctqSignDoubleBody = ($.isNode() ? process.env.jctqSignDoubleBody : $.getdata('jctqSignDoubleBody')) || '';
 
 ///////////////////////////////////////////////////////////////////
 
@@ -64,12 +64,19 @@ async function getRewrite() {
         zqkey_id = rUrl.match(/zqkey_id=([\w-]+)/)[1]
         uid = rUrl.match(/uid=([\w]+)/)[1]
         uidStr = 'uid=' + uid
-        if(jctqCookie.indexOf(uidStr) > -1) {
-            $.msg(jsname+` 已获取过此用户的jctqCookie`)
+        
+        if(jctqCookie) {
+            if(jctqCookie.indexOf(uidStr) > -1) {
+                $.msg(jsname+` 此jctqCookie已存在，本次跳过`)
+            } else {
+                jctqCookie = jctqCookie + '&' + newCookie
+                $.setdata(jctqCookie, 'jctqCookie');
+                bodyList = jctqCookie.split('&')
+                $.msg(jsname+` 获取第${bodyList.length}个jctqCookie成功`)
+            }
         } else {
-            jctqCookie = `app_version=${app_version}&cookie=${zqkey}&cookie_id=${zqkey_id}&uid=${uid}`
-            $.setdata(jctqCookie, 'jctqCookie');
-            $.msg(jsname+` 获取jctqCookie成功`)
+            $.setdata(newCookie, 'jctqCookie');
+            $.msg(jsname+` 获取第1个jctqCookie成功`)
         }
     }
     
@@ -146,8 +153,19 @@ async function getRewrite() {
     
     if($request.url.indexOf('v5/wechat/withdraw2.json') > -1) {
         rBody = $request.body
-        $.setdata(rBody, 'jctqWithdraw');
-        $.msg(jsname+` 获取提现body成功`)
+        if(jctqWithdraw) {
+            if(jctqWithdraw.indexOf(rBody) > -1) {
+                $.msg(jsname+` 此提现body已存在，本次跳过`)
+            } else {
+                jctqWithdraw = jctqWithdraw + '&' + rBody
+                $.setdata(jctqWithdraw, 'jctqWithdraw');
+                bodyList = jctqWithdraw.split('&')
+                $.msg(jsname+` 获取第${bodyList.length}个提现body成功`)
+            }
+        } else {
+            $.setdata(rBody, 'jctqWithdraw');
+            $.msg(jsname+` 获取第1个提现body成功`)
+        }
     }
     
     if($request.url.indexOf('v5/Weather/giveBoxOnWeather.json') > -1) {
@@ -181,6 +199,23 @@ async function getRewrite() {
         } else {
             $.setdata(rBody, 'jctqBubbleBody');
             $.msg(jsname+` 获取第1个首页气泡/翻倍body成功`)
+        }
+    }
+    
+    if($request.url.indexOf('v5/CommonReward/toDouble.json') > -1) {
+        rBody = $request.body
+        if(jctqSignDoubleBody) {
+            if(jctqSignDoubleBody.indexOf(rBody) > -1) {
+                $.msg(jsname+` 此签到翻倍body已存在，本次跳过`)
+            } else {
+                jctqSignDoubleBody = jctqSignDoubleBody + '&' + rBody
+                $.setdata(jctqSignDoubleBody, 'jctqSignDoubleBody');
+                bodyList = jctqSignDoubleBody.split('&')
+                $.msg(jsname+` 获取第${bodyList.length}个签到翻倍body成功`)
+            }
+        } else {
+            $.setdata(rBody, 'jctqSignDoubleBody');
+            $.msg(jsname+` 获取第1个签到翻倍body成功`)
         }
     }
 }
