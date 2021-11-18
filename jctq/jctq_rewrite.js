@@ -65,13 +65,14 @@ async function getRewrite() {
         uid = rUrl.match(/uid=([\w]+)/)[1]
         uidStr = 'uid=' + uid
         
+        let newCookie = `app_version=${app_version}&cookie=${zqkey}&cookie_id=${zqkey_id}&uid=${uid}`
         if(jctqCookie) {
             if(jctqCookie.indexOf(uidStr) > -1) {
                 $.msg(jsname+` 此jctqCookie已存在，本次跳过`)
             } else {
-                jctqCookie = jctqCookie + '&' + newCookie
+                jctqCookie = jctqCookie + '@' + newCookie
                 $.setdata(jctqCookie, 'jctqCookie');
-                bodyList = jctqCookie.split('&')
+                bodyList = jctqCookie.split('@')
                 $.msg(jsname+` 获取第${bodyList.length}个jctqCookie成功`)
             }
         } else {

@@ -57,7 +57,7 @@ let withdrawSuccess = 0
         }
         
         numBoxbody = jctqSignDoubleBodyArr.length
-        console.log(`找到${numBoxbody}个签到翻倍body`)
+        console.log(`找到${numBoxbody}个签到翻倍body，观看32秒视频后开始领取下一个`)
         
         for(let i=0; i<numBoxbody; i++) {
             let rewardBody = jctqSignDoubleBodyArr[i]
@@ -65,7 +65,7 @@ let withdrawSuccess = 0
             await toDouble(rewardBody)
         }
         
-        if(jctqWithdraw > 0 && jctqWithdrawArr.length > 0) {
+        if(jctqWithdrawFlag > 0 && jctqWithdrawArr.length > 0) {
             numBoxbody = jctqWithdrawArr.length
             console.log(`找到${numBoxbody}个提现body`)
             
@@ -74,7 +74,7 @@ let withdrawSuccess = 0
                 await withdraw(withBody)
                 await $.wait(1000)
             }
-        } else if(jctqWithdraw == 0) {
+        } else if(jctqWithdrawFlag == 0) {
             console.log(`你设置了不自动提现`)
         } else if(jctqWithdrawArr.length == 0) {
             console.log(`没有找到提现body`)
@@ -116,7 +116,7 @@ async function showmsg() {
 async function checkEnv() {
     
     if(jctqCookie) {
-        if(jctqCookie.indexOf('&') > -1) {
+        if(jctqCookie.indexOf('@') > -1) {
             let jctqCookies = jctqCookie.split('@')
             for(let i=0; i<jctqCookies.length; i++) {
                 jctqCookieArr.push(replaceCookie(jctqCookies[i]))
