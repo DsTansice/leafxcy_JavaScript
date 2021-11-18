@@ -26,7 +26,6 @@ let userCookie = ''
 
 let bannerIdList = []
 let duplicatedCount = 0
-let invalidCount = 0
 let finishCount = 0
 let rewardAmount = 0
 
@@ -157,8 +156,6 @@ async function adlickstart(lookStartBody,idx) {
             console.log(`第${idx+1}次看看赚任务[id:${bannerId}]重复`)
         }
     } else {
-        invalidCount++
-        await removeBody(lookStartBody)
         console.log(`激活第${idx+1}个看看赚失败：${result.message}`)
     }
 }
@@ -268,7 +265,6 @@ async function getStatus() {
     notifyStr += `本次运行情况：\n`
     notifyStr += `共完成了${finishCount}个看看赚任务，获得${rewardAmount}金币\n`
     if(duplicatedCount > 0) notifyStr += `删除了${duplicatedCount}个重复的body\n`
-    if(invalidCount > 0) notifyStr += `删除了${invalidCount}个无效的body\n`
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -6,7 +6,7 @@ https://tq.xunsl.com/v5/CommonReward/toGetReward.json       -- 签到，和福�
 https://tq.xunsl.com/v5/article/info.json                   -- 点开文章获取文章body  
 https://tq.xunsl.com/v5/article/detail.json                 -- 点开视频获取视频body  
 https://tq.xunsl.com/v5/user/stay.json                      -- 阅读文章或者看视频一段时间后可以获取到时长body  
-https://tq.xunsl.com/v5/nameless/adlickstart.json           -- 点开看看赚获取body，可以一直开着，脚本会自动删除重复和失效body  
+https://tq.xunsl.com/v5/nameless/adlickstart.json           -- 点开看看赚获取body，可以一直开着，脚本会自动删除重复body  
 https://tq.xunsl.com/v5/Weather/giveBoxOnWeather.json       -- 点开福利页浮窗宝箱和观看翻倍视频获取body  
 https://tq.xunsl.com/v5/weather/giveTimeInterval.json       -- 点开首页气泡红包和观看翻倍视频获取body  
 https://tq.xunsl.com/v5/wechat/withdraw2.json               -- 提现一次对应金额获取body  
