@@ -25,7 +25,7 @@ let jctqLookStartbodyArr = []
 let userCookie = ''
 
 let bannerIdList = []
-let duplicatedCount = 0
+//let duplicatedCount = 0
 let finishCount = 0
 let rewardAmount = 0
 
@@ -137,7 +137,7 @@ async function adlickstart(lookStartBody,idx) {
     
     if(result.success == true) {
         let bannerId = result.items.banner_id
-        if(await checkDuplicated(lookStartBody,bannerId)) {
+        //if(await checkDuplicated(lookStartBody,bannerId)) {
             if(result.items.comtele_state == 1) {
                 console.log(`第${idx+1}个看看赚[id:${bannerId}]已完成`)
             } else {
@@ -152,9 +152,9 @@ async function adlickstart(lookStartBody,idx) {
                 await $.wait(1000)
                 await adlickend(lookStartBody,idx)
             }
-        } else {
-            console.log(`第${idx+1}次看看赚任务[id:${bannerId}]重复`)
-        }
+        //} else {
+        //    console.log(`第${idx+1}次看看赚任务[id:${bannerId}]重复`)
+        //}
     } else {
         console.log(`激活第${idx+1}个看看赚失败：${result.message}`)
     }
@@ -240,6 +240,7 @@ async function getBoxReward(id) {
 }
 
 //看看赚去重
+/*
 async function checkDuplicated(lookStartBody,bannerId) {
     for(let i=0; i<bannerIdList.length; i++) {
         if(bannerId == bannerIdList[i]) {
@@ -259,12 +260,12 @@ async function removeBody(lookStartBody) {
     newBody = newBody.replace("&&","&");
     $.setdata(newBody,'jctqLookStartbody');
 }
+*/
 
 //统计运行情况
 async function getStatus() {
     notifyStr += `本次运行情况：\n`
     notifyStr += `共完成了${finishCount}个看看赚任务，获得${rewardAmount}金币\n`
-    if(duplicatedCount > 0) notifyStr += `删除了${duplicatedCount}个重复的body\n`
 }
 
 ////////////////////////////////////////////////////////////////////
