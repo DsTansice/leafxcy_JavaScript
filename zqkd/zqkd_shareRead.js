@@ -1,10 +1,10 @@
 /*
-安卓：晶彩天气(v8.3.7)
+安卓：中青看点
 
 转发和分享阅读，请勿贪心，小心黑号
 */
 
-const jsname = '晶彩天气分享阅读'
+const jsname = '中青看点分享阅读'
 const $ = Env(jsname)
 const notifyFlag = 1; //0为关闭通知，1为打开通知,默认为1
 const logDebug = 0
@@ -15,13 +15,13 @@ let notifyStr = ''
 let rndtime = "" //毫秒
 let httpResult //global buffer
 
-let jctqCookie = ($.isNode() ? process.env.jctqCookie : $.getdata('jctqCookie')) || '';
-let jctqCookieArr = []
+let zqkdCookie = ($.isNode() ? process.env.zq_cookie : $.getdata('zq_cookie')) || '';
+let zqkdCookieArr = []
 
 let userCk = ''
 let readCount = 0
 
-let jctqShareNum = ($.isNode() ? process.env.jctqShareNum : $.getdata('jctqShareNum')) || 0;
+let zqkdShareNum = ($.isNode() ? process.env.zqkdShareNum : $.getdata('zqkdShareNum')) || 0;
 
 let newsItem = ''
 let UserAgent = ''
@@ -41,9 +41,9 @@ let si = ''
             return
         }
         
-        for(let j=0; j<jctqCookieArr.length; j++) {
+        for(let j=0; j<zqkdCookieArr.length; j++) {
             
-            userCk = jctqCookieArr[j]
+            userCk = zqkdCookieArr[j]
             
             console.log(`=========== 账号${j+1} 开始分享转发 ===========`)
             
@@ -52,8 +52,8 @@ let si = ''
             await listsNewTag()
             
             if(newsItem) {
-                console.log(`开始分享阅读${jctqShareNum}次`)
-                for(let i=0; i<jctqShareNum; i++) {
+                console.log(`开始分享阅读${zqkdShareNum}次`)
+                for(let i=0; i<zqkdShareNum; i++) {
                     readCount++
                     let maxWaitTime = 300000
                     let minWaitTime = 30000
@@ -61,7 +61,7 @@ let si = ''
                     let factor = seedFactor > maxWaitTime ? maxWaitTime : seedFactor
                     let randomTime = Math.floor(Math.random()*factor) + 1000
                     let second = Math.floor(randomTime/1000)
-                    UserAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.16(0x1800102c) NetType/WIFI Language/zh_CN'
+                    UserAgent = `Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.16(0x1800102c) NetType/WIFI Language/zh_CN`
                     si = randomString(32)
                     console.log(`--随机延迟${second}秒后开始模拟第${readCount}次分享阅读`)
                     await $.wait(randomTime)
@@ -102,47 +102,44 @@ async function showmsg() {
 
 async function checkEnv() {
     
-    if(jctqShareNum == 0) {
-        console.log('当前分享次数设置为0。如果需要开启分享阅读，请设置环境变量jctqShareNum为要被阅读的次数。')
+    if(zqkdShareNum == 0) {
+        console.log('当前分享次数设置为0。如果需要开启分享阅读，请设置环境变量zqkdShareNum为要被阅读的次数。')
         return false
     }
     
-    if(jctqCookie) {
-        if(jctqCookie.indexOf('@') > -1) {
-            let jctqCookies = jctqCookie.split('@')
-            for(let i=0; i<jctqCookies.length; i++) {
-                jctqCookieArr.push(replaceCookie(jctqCookies[i]))
+    if(zqkdCookie) {
+        if(zqkdCookie.indexOf('@') > -1) {
+            let zqkdCookies = zqkdCookie.split('@')
+            for(let i=0; i<zqkdCookies.length; i++) {
+                zqkdCookieArr.push(replaceCookie(zqkdCookies[i]))
             }
         } else {
-            jctqCookieArr.push(replaceCookie(jctqCookie))
+            zqkdCookieArr.push(replaceCookie(zqkdCookie))
         }
     } else {
-        console.log('未找到jctqCookie')
+        console.log('未找到zqkdCookie')
         return false
     }
     
-    console.log(`共找到${jctqCookieArr.length}个cookie`)
+    console.log(`共找到${zqkdCookieArr.length}个cookie`)
     
     return true
 }
 
-function replaceCookie(jctqCookieItem) {
-    if(jctqCookieItem.indexOf('cookie=') == -1 && jctqCookieItem.indexOf('zqkey=') > -1) {
-        jctqCookieItem = jctqCookieItem.replace(/zqkey=/, "cookie=")
+function replaceCookie(zqkdCookieItem) {
+    if(zqkdCookieItem.indexOf('cookie=') == -1 && zqkdCookieItem.indexOf('zqkey=') > -1) {
+        zqkdCookieItem = zqkdCookieItem.replace(/zqkey=/, "cookie=")
     }
-    if(jctqCookieItem.indexOf('cookie_id=') == -1 && jctqCookieItem.indexOf('zqkey_id=') > -1) {
-        jctqCookieItem = jctqCookieItem.replace(/zqkey_id=/, "cookie_id=")
+    if(zqkdCookieItem.indexOf('cookie_id=') == -1 && zqkdCookieItem.indexOf('zqkey_id=') > -1) {
+        zqkdCookieItem = zqkdCookieItem.replace(/zqkey_id=/, "cookie_id=")
     }
-    if(jctqCookieItem.indexOf('app_version=') == -1) {
-        jctqCookieItem = 'app_version=8.3.7&' + jctqCookieItem
-    }
-    return jctqCookieItem
+    return zqkdCookieItem
 }
 
 //转发页面列表
 async function listsNewTag() {
     let caller = printCaller()
-    let url = 'http://tq.xunsl.com/WebApi/ArticleTop/listsNewTag'
+    let url = 'http://kandian.wkandian.com/WebApi/ArticleTop/listsNewTag'
     let urlObject = populatePostUrlShare(url,userCk)
     await httpPost(urlObject,caller)
     let result = httpResult;
@@ -163,7 +160,7 @@ async function listsNewTag() {
 //转发文章
 async function getShareArticleReward() {
     let caller = printCaller()
-    let url = 'http://tq.xunsl.com/WebApi/ShareNew/getShareArticleReward'
+    let url = 'http://kandian.wkandian.com/WebApi/ShareNew/getShareArticleReward'
     let reqBody = userCk + '&article_id=' + newsItem.id
     let urlObject = populatePostUrlShare(url,reqBody)
     await httpPost(urlObject,caller)
@@ -184,7 +181,7 @@ async function shareReadStep1() {
     let caller = printCaller()
     let rndtime = Math.floor(new Date().getTime())
     let share_url = encodeURIComponent(encodeURIComponent(newsItem.share_url+'#'))
-    let shareLink = `https://scripttq.xunsl.com/count2/storage?t=${si}&referer=${share_url}&_=${rndtime}&jsonpcallback=jsonp2`
+    let shareLink = `https://script.baertt.com/count2/storage?t=${si}&referer=${share_url}&_=${rndtime}&jsonpcallback=jsonp2`
     let urlObject = populateGetUrlRead(shareLink)
     await httpGet(urlObject,caller)
 }
@@ -193,7 +190,7 @@ async function shareReadStep2() {
     let caller = printCaller()
     let rndtime = Math.floor(new Date().getTime())
     let share_url = encodeURIComponent(encodeURIComponent(newsItem.share_url+'#'))
-    let shareLink = `https://scripttq.xunsl.com/count2/visit?type=1&si=${si}&referer=${share_url}&_=${rndtime}&jsonpcallback=jsonp3`
+    let shareLink = `https://script.baertt.com/count2/visit?type=1&si=${si}&referer=${share_url}&_=${rndtime}&jsonpcallback=jsonp3`
     let urlObject = populateGetUrlRead(shareLink)
     await httpGet(urlObject,caller)
 }
@@ -202,7 +199,7 @@ async function shareReadStep3() {
     let caller = printCaller()
     let rndtime = Math.floor(new Date().getTime())
     let share_url = encodeURIComponent(encodeURIComponent(newsItem.share_url+'#'))
-    let shareLink = `https://scripttq.xunsl.com/count2/openpage?referer=${share_url}&_=${rndtime}&jsonpcallback=jsonp5`
+    let shareLink = `https://script.baertt.com/count2/openpage?referer=${share_url}&_=${rndtime}&jsonpcallback=jsonp5`
     let urlObject = populateGetUrlRead(shareLink)
     await httpGet(urlObject,caller)
 }
@@ -211,7 +208,7 @@ async function shareReadStep4() {
     let caller = printCaller()
     let rndtime = Math.floor(new Date().getTime())
     let share_url = encodeURIComponent(encodeURIComponent(newsItem.share_url+'#'))
-    let shareLink = `https://scripttq.xunsl.com/count2/callback?si=${si}&referer=${share_url}&_=${rndtime}&jsonpcallback=jsonp6`
+    let shareLink = `https://script.baertt.com/count2/callback?si=${si}&referer=${share_url}&_=${rndtime}&jsonpcallback=jsonp6`
     let urlObject = populateGetUrlRead(shareLink)
     await httpGet(urlObject,caller)
 }
@@ -233,11 +230,11 @@ function populatePostUrlShare(url,reqBody){
         url: url,
         headers: {
             'request_time' : rndtime,
-            'Host' : 'tq.xunsl.com',
+            'Host' : 'kandian.wkandian.com',
             'device-platform' : 'android',
             'Connection' : 'keep-alive',
             'app-type' : 'jcweather',
-            'Referer' : 'http://tq.xunsl.com/h5/hotShare/?' + userCk,
+            'Referer' : 'http://kandian.wkandian.com/h5/hotShare/?' + userCk,
         },
         body: reqBody
     }
@@ -248,7 +245,7 @@ function populateGetUrlRead(url){
     let urlObject = {
         url: url,
         headers: {
-            'Host' : 'scripttq.xunsl.com',
+            'Host' : 'script.baertt.com',
             'Connection' : 'keep-alive',
             'Accept' : '*/*',
             'User-Agent' : UserAgent,

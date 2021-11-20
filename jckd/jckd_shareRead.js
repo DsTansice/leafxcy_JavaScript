@@ -1,10 +1,10 @@
 /*
-安卓：晶彩天气(v8.3.7)
+安卓：晶彩看点
 
 转发和分享阅读，请勿贪心，小心黑号
 */
 
-const jsname = '晶彩天气分享阅读'
+const jsname = '晶彩看点分享阅读'
 const $ = Env(jsname)
 const notifyFlag = 1; //0为关闭通知，1为打开通知,默认为1
 const logDebug = 0
@@ -15,13 +15,13 @@ let notifyStr = ''
 let rndtime = "" //毫秒
 let httpResult //global buffer
 
-let jctqCookie = ($.isNode() ? process.env.jctqCookie : $.getdata('jctqCookie')) || '';
-let jctqCookieArr = []
+let jckdCookie = ($.isNode() ? process.env.jc_cookie : $.getdata('jc_cookie')) || '';
+let jckdCookieArr = []
 
 let userCk = ''
 let readCount = 0
 
-let jctqShareNum = ($.isNode() ? process.env.jctqShareNum : $.getdata('jctqShareNum')) || 0;
+let jckdShareNum = ($.isNode() ? process.env.jckdShareNum : $.getdata('jckdShareNum')) || 0;
 
 let newsItem = ''
 let UserAgent = ''
@@ -41,9 +41,9 @@ let si = ''
             return
         }
         
-        for(let j=0; j<jctqCookieArr.length; j++) {
+        for(let j=0; j<jckdCookieArr.length; j++) {
             
-            userCk = jctqCookieArr[j]
+            userCk = jckdCookieArr[j]
             
             console.log(`=========== 账号${j+1} 开始分享转发 ===========`)
             
@@ -52,8 +52,8 @@ let si = ''
             await listsNewTag()
             
             if(newsItem) {
-                console.log(`开始分享阅读${jctqShareNum}次`)
-                for(let i=0; i<jctqShareNum; i++) {
+                console.log(`开始分享阅读${jckdShareNum}次`)
+                for(let i=0; i<jckdShareNum; i++) {
                     readCount++
                     let maxWaitTime = 300000
                     let minWaitTime = 30000
@@ -102,47 +102,44 @@ async function showmsg() {
 
 async function checkEnv() {
     
-    if(jctqShareNum == 0) {
-        console.log('当前分享次数设置为0。如果需要开启分享阅读，请设置环境变量jctqShareNum为要被阅读的次数。')
+    if(jckdShareNum == 0) {
+        console.log('当前分享次数设置为0。如果需要开启分享阅读，请设置环境变量jckdShareNum为要被阅读的次数。')
         return false
     }
     
-    if(jctqCookie) {
-        if(jctqCookie.indexOf('@') > -1) {
-            let jctqCookies = jctqCookie.split('@')
-            for(let i=0; i<jctqCookies.length; i++) {
-                jctqCookieArr.push(replaceCookie(jctqCookies[i]))
+    if(jckdCookie) {
+        if(jckdCookie.indexOf('@') > -1) {
+            let jckdCookies = jckdCookie.split('@')
+            for(let i=0; i<jckdCookies.length; i++) {
+                jckdCookieArr.push(replaceCookie(jckdCookies[i]))
             }
         } else {
-            jctqCookieArr.push(replaceCookie(jctqCookie))
+            jckdCookieArr.push(replaceCookie(jckdCookie))
         }
     } else {
-        console.log('未找到jctqCookie')
+        console.log('未找到jckdCookie')
         return false
     }
     
-    console.log(`共找到${jctqCookieArr.length}个cookie`)
+    console.log(`共找到${jckdCookieArr.length}个cookie`)
     
     return true
 }
 
-function replaceCookie(jctqCookieItem) {
-    if(jctqCookieItem.indexOf('cookie=') == -1 && jctqCookieItem.indexOf('zqkey=') > -1) {
-        jctqCookieItem = jctqCookieItem.replace(/zqkey=/, "cookie=")
+function replaceCookie(jckdCookieItem) {
+    if(jckdCookieItem.indexOf('cookie=') == -1 && jckdCookieItem.indexOf('zqkey=') > -1) {
+        jckdCookieItem = jckdCookieItem.replace(/zqkey=/, "cookie=")
     }
-    if(jctqCookieItem.indexOf('cookie_id=') == -1 && jctqCookieItem.indexOf('zqkey_id=') > -1) {
-        jctqCookieItem = jctqCookieItem.replace(/zqkey_id=/, "cookie_id=")
+    if(jckdCookieItem.indexOf('cookie_id=') == -1 && jckdCookieItem.indexOf('zqkey_id=') > -1) {
+        jckdCookieItem = jckdCookieItem.replace(/zqkey_id=/, "cookie_id=")
     }
-    if(jctqCookieItem.indexOf('app_version=') == -1) {
-        jctqCookieItem = 'app_version=8.3.7&' + jctqCookieItem
-    }
-    return jctqCookieItem
+    return jckdCookieItem
 }
 
 //转发页面列表
 async function listsNewTag() {
     let caller = printCaller()
-    let url = 'http://tq.xunsl.com/WebApi/ArticleTop/listsNewTag'
+    let url = 'http://ant.xunsl.com/WebApi/ArticleTop/listsNewTag'
     let urlObject = populatePostUrlShare(url,userCk)
     await httpPost(urlObject,caller)
     let result = httpResult;
@@ -163,7 +160,7 @@ async function listsNewTag() {
 //转发文章
 async function getShareArticleReward() {
     let caller = printCaller()
-    let url = 'http://tq.xunsl.com/WebApi/ShareNew/getShareArticleReward'
+    let url = 'http://ant.xunsl.com/WebApi/ShareNew/getShareArticleReward'
     let reqBody = userCk + '&article_id=' + newsItem.id
     let urlObject = populatePostUrlShare(url,reqBody)
     await httpPost(urlObject,caller)
@@ -184,7 +181,7 @@ async function shareReadStep1() {
     let caller = printCaller()
     let rndtime = Math.floor(new Date().getTime())
     let share_url = encodeURIComponent(encodeURIComponent(newsItem.share_url+'#'))
-    let shareLink = `https://scripttq.xunsl.com/count2/storage?t=${si}&referer=${share_url}&_=${rndtime}&jsonpcallback=jsonp2`
+    let shareLink = `https://script.xunsl.com/count2/storage?t=${si}&referer=${share_url}&_=${rndtime}&jsonpcallback=jsonp2`
     let urlObject = populateGetUrlRead(shareLink)
     await httpGet(urlObject,caller)
 }
@@ -193,7 +190,7 @@ async function shareReadStep2() {
     let caller = printCaller()
     let rndtime = Math.floor(new Date().getTime())
     let share_url = encodeURIComponent(encodeURIComponent(newsItem.share_url+'#'))
-    let shareLink = `https://scripttq.xunsl.com/count2/visit?type=1&si=${si}&referer=${share_url}&_=${rndtime}&jsonpcallback=jsonp3`
+    let shareLink = `https://script.xunsl.com/count2/visit?type=1&si=${si}&referer=${share_url}&_=${rndtime}&jsonpcallback=jsonp3`
     let urlObject = populateGetUrlRead(shareLink)
     await httpGet(urlObject,caller)
 }
@@ -202,7 +199,7 @@ async function shareReadStep3() {
     let caller = printCaller()
     let rndtime = Math.floor(new Date().getTime())
     let share_url = encodeURIComponent(encodeURIComponent(newsItem.share_url+'#'))
-    let shareLink = `https://scripttq.xunsl.com/count2/openpage?referer=${share_url}&_=${rndtime}&jsonpcallback=jsonp5`
+    let shareLink = `https://script.xunsl.com/count2/openpage?referer=${share_url}&_=${rndtime}&jsonpcallback=jsonp5`
     let urlObject = populateGetUrlRead(shareLink)
     await httpGet(urlObject,caller)
 }
@@ -211,7 +208,7 @@ async function shareReadStep4() {
     let caller = printCaller()
     let rndtime = Math.floor(new Date().getTime())
     let share_url = encodeURIComponent(encodeURIComponent(newsItem.share_url+'#'))
-    let shareLink = `https://scripttq.xunsl.com/count2/callback?si=${si}&referer=${share_url}&_=${rndtime}&jsonpcallback=jsonp6`
+    let shareLink = `https://script.xunsl.com/count2/callback?si=${si}&referer=${share_url}&_=${rndtime}&jsonpcallback=jsonp6`
     let urlObject = populateGetUrlRead(shareLink)
     await httpGet(urlObject,caller)
 }
@@ -233,11 +230,11 @@ function populatePostUrlShare(url,reqBody){
         url: url,
         headers: {
             'request_time' : rndtime,
-            'Host' : 'tq.xunsl.com',
+            'Host' : 'ant.xunsl.com',
             'device-platform' : 'android',
             'Connection' : 'keep-alive',
             'app-type' : 'jcweather',
-            'Referer' : 'http://tq.xunsl.com/h5/hotShare/?' + userCk,
+            'Referer' : 'http://ant.xunsl.com/h5/hotShare/?' + userCk,
         },
         body: reqBody
     }
@@ -248,7 +245,7 @@ function populateGetUrlRead(url){
     let urlObject = {
         url: url,
         headers: {
-            'Host' : 'scripttq.xunsl.com',
+            'Host' : 'script.xunsl.com',
             'Connection' : 'keep-alive',
             'Accept' : '*/*',
             'User-Agent' : UserAgent,
