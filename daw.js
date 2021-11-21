@@ -81,27 +81,28 @@ let vipLevel = 0
             }
         }
         
-        console.log(`\n先每个账号并发看广告和抽奖`)
-        for(let i=0; i<maxTryNum; i++) {
-            console.log(`\n============= 第${i+1}轮看视频抽奖 =============`)
-            allCompFlag = 1
-            waitTime = 65*1000
-            
-            for(channelIdx=0; channelIdx<channel.length; channelIdx++) {
+        for(channelIdx=0; channelIdx<channel.length; channelIdx++) {
+            console.log(`\n先每个账号并发看广告和抽奖，开始${channelStr[channelIdx]}任务`)
+            for(let i=0; i<maxTryNum; i++) {
+                console.log(`\n============= 第${i+1}轮看视频抽奖 =============`)
+                allCompFlag = 1
+                waitTime = 65*1000
+                
                 for(userIdx=0; userIdx<numBoxbody; userIdx++) {
                     if(await QueryVipInfo()) {
                         console.log(`账户${userIdx+1}${channelStr[channelIdx]} ${userName}：`)
                         await QueryCoinInfo(1)
                     }
                 }
-            }
-            if(allCompFlag) {
-                console.log(`所有账号已完成看广告和抽奖任务`)
-                break
-            } else if (i < maxTryNum-1){
-                if(waitTime > 0) {
-                    console.log(`等待${waitTime}ms 进行下一轮看视频抽奖\n`)
-                    await $.wait(waitTime)
+                
+                if(allCompFlag) {
+                    console.log(`所有账号已完成看广告和抽奖任务`)
+                    break
+                } else if (i < maxTryNum-1){
+                    if(waitTime > 0) {
+                        console.log(`等待${waitTime}ms 进行下一轮看视频抽奖\n`)
+                        await $.wait(waitTime)
+                    }
                 }
             }
         }
