@@ -408,14 +408,14 @@ async function getEnvParam(userNum)
     
     pgv_info = wx_ck_tmp.match(/pgv_info=([\w=]+)/)[1]
     pgv_pvid = wx_ck_tmp.match(/pgv_pvid=([\w]+)/)[1]
-    ts_last = wx_ck_tmp.match(/ts_last=([\w\/]+)/)[1]
-    ts_refer = wx_ck_tmp.match(/ts_refer=([\w\/\.]+)/)[1]
+    //ts_last = wx_ck_tmp.match(/ts_last=([\w\/]+)/)[1]
+    //ts_refer = wx_ck_tmp.match(/ts_refer=([\w\/\.]+)/)[1]
     ts_sid = wx_ck_tmp.match(/ts_sid=([\w]+)/)[1]
     ts_uid = wx_ck_tmp.match(/ts_uid=([\w]+)/)[1]
     qlappid = wx_ck_tmp.match(/qlappid=([\w]+)/)[1]
     qlskey = wx_ck_tmp.match(/qlskey=([\w]+)/)[1]
     qluin = wx_ck_tmp.match(/qluin=([\w@\.]+)/)[1]
-    qq_logtype = wx_ck_tmp.match(/qq_logtype=([\w]+)/)[1]
+    //qq_logtype = wx_ck_tmp.match(/qq_logtype=([\w]+)/)[1]
     wzq_qlappid = wx_ck_tmp.match(/wzq_qlappid=([\w]+)/)[1]
     wzq_qlskey = wx_ck_tmp.match(/wzq_qlskey=([\w]+)/)[1]
     wzq_qluin = wx_ck_tmp.match(/wzq_qluin=([\w-]+)/)[1]
@@ -423,7 +423,7 @@ async function getEnvParam(userNum)
     
     //wx_ck = `pgv_info=${pgv_info}; pgv_pvid=${pgv_pvid}; ts_last=${ts_last}; ts_refer=${ts_refer}; ts_sid=${ts_sid}; ts_uid=${ts_uid}; qlappid=${qlappid}; qlskey=${qlskey}; qluin=${qluin}; qq_logtype=${qq_logtype}; wx_session_time=${sessionTime}; wzq_qlappid=${wzq_qlappid}; wzq_qlskey=${wzq_qlskey}; wzq_qluin=${wzq_qluin}; zxg_openid=${zxg_openid}`
     
-    wx_ck = `pgv_info=${pgv_info}; pgv_pvid=${pgv_pvid}; ts_last=${ts_last}; ts_refer=${ts_refer}; ts_sid=${ts_sid}; ts_uid=${ts_uid}; qlappid=${qlappid}; qlskey=${qlskey}; qluin=${qluin}; qq_logtype=${qq_logtype}; wzq_qlappid=${wzq_qlappid}; wzq_qlskey=${wzq_qlskey}; wzq_qluin=${wzq_qluin}; zxg_openid=${zxg_openid}`
+    wx_ck = `pgv_info=${pgv_info}; pgv_pvid=${pgv_pvid}; ts_sid=${ts_sid}; ts_uid=${ts_uid}; qlappid=${qlappid}; qlskey=${qlskey}; qluin=${qluin}; wzq_qlappid=${wzq_qlappid}; wzq_qlskey=${wzq_qlskey}; wzq_qluin=${wzq_qluin}; zxg_openid=${zxg_openid}`
 }
 
 async function initAccountInfo()
