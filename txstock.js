@@ -2229,11 +2229,13 @@ async function appGuessStockAward(guessDate) {
                             if(result.stock_rewards && Array.isArray(result.stock_rewards)) {
                                 for(let i=0; i<result.stock_rewards.length; i++) {
                                     let rewardItem = result.stock_rewards[i]
-                                    console.log(rewardItem)
-                                    $.log(`猜中${rewardItem.stock_name}涨跌获得：${rewardItem.reward_desc}\n`);
+                                    let stock_name = rewardItem.stock_name ? rewardItem.stock_name : ''
+                                    let reward_desc = rewardItem.reward_desc ? rewardItem.reward_desc : ''
+                                    $.log(`猜中${stock_name}涨跌获得：${reward_desc}\n`);
                                 }
                             }
-                            $.log(`总奖励：${result.stock_reward_desc}\n`);
+                            let stock_reward_desc = result.stock_reward_desc ? result.stock_reward_desc : ''
+                            $.log(`总奖励：${stock_reward_desc}\n`);
                         } else {
                             $.log(`获得个股猜涨跌奖励失败：${result.retmsg}\n`);
                         }
