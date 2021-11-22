@@ -1,6 +1,6 @@
 /*
 腾讯自选股APP & 微信微证券公众号
-改自@CenBoMin大佬的脚本
+
 只适配了IOS，测试了青龙和V2P，其他平台请自行测试，安卓请自行测试
 多用户用#隔开
 
@@ -253,12 +253,15 @@ async function getRewrite()
         if($request.url.indexOf("openid=") > -1)
         {
             //APP包
+            let msgStr = ''
             $.setdata($request.url,'TxStockAppUrl')
             $.log(`获取TxStockAppUrl成功: ${$request.url}\n`)
-            $.msg(`获取TxStockAppUrl成功: ${$request.url}\n`)
+            msgStr += `获取TxStockAppUrl成功: ${$request.url}\n`
             $.setdata(JSON.stringify($request.headers),'TxStockAppHeader')
             $.log(`获取TxStockAppHeader成功: ${JSON.stringify($request.headers)}\n`)
-            $.msg(`获取TxStockAppHeader成功: ${JSON.stringify($request.headers)}\n`)
+            msgStr += `获取TxStockAppHeader成功: ${JSON.stringify($request.headers)}\n`
+            
+            $.msg(msgStr)
         }
         else
         {
@@ -1989,7 +1992,7 @@ async function appGuessStatus() {
     rndtime = Math.round(curTime.getTime())
     currentHour = curTime.getHours()
     currentDay = curTime.getDay()
-    let isGuessTime = ((currentHour < 13) && (currentHour > 9) && (currentDay < 6)) ? 1 : 0
+    let isGuessTime = ((currentHour < 13) && (currentHour > 9) && (currentDay < 6) && (currentDay > 0)) ? 1 : 0
     return new Promise((resolve) => {
         let url = {
             url: `https://zqact.tenpay.com/cgi-bin/guess_home.fcgi?channel=1&source=2&new_version=3&_=${rndtime}&openid=${app_openid}&fskey=${app_fskey}&access_token=${app_token}&_appName=${app_appName}&_appver=${app_appver}&_osVer=${app_osVer}&_devId=${app_devId}`,
@@ -2019,10 +2022,20 @@ async function appGuessStatus() {
                             if(result.notice_info && result.notice_info[0]) {
                                 if(logDebug) console.log(result)
                                 if(result.notice_info[0].answer_status == 1) {
-                                    $.log(`上期猜涨跌回答正确，正在取得奖励\n`);
+                                    $.log(`上期猜上证指数涨跌回答正确，正在取得奖励\n`);
                                     await appGuessAward(result.notice_info[0].date)
                                 } else {
-                                    $.log(`上期猜涨跌回答错误\n`);
+                                    $.log(`上期猜上证指数涨跌回答错误\n`);
+                                }
+                                await $.wait(1000)
+                            }
+                            if(result.stock_notice_info && result.stock_notice_info[0]) {
+                                if(logDebug) console.log(result)
+                                if(result.stock_notice_info[0].guess_correct == 1) {
+                                    $.log(`上期猜个股涨跌回答正确，正在取得奖励\n`);
+                                    await appGuessStockAward(result.stock_notice_info[0].date)
+                                } else {
+                                    $.log(`上期猜个股涨跌回答错误\n`);
                                 }
                                 await $.wait(1000)
                             }
@@ -2142,7 +2155,7 @@ async function appGetStockInfo(scode,markets) {
     });
 }
 
-//猜涨跌奖励
+//猜上证指数涨跌奖励
 async function appGuessAward(guessDate) {
     rndtime = Math.round(curTime.getTime())
     return new Promise((resolve) => {
@@ -2170,9 +2183,59 @@ async function appGuessAward(guessDate) {
                         let result = JSON.parse(data);
                         if(logDebug) console.log(result)
                         if(result.retcode == 0) {
-                            $.log(`获得猜涨跌奖励：${result.reward_memo} ${result.reward_value}金币\n`);
+                            $.log(`获得上证指数猜涨跌奖励：${result.reward_memo} ${result.reward_value}金币\n`);
                         } else {
-                            $.log(`获得猜涨跌奖励失败：${result.retmsg}\n`);
+                            $.log(`获得上证指数猜涨跌奖励失败：${result.retmsg}\n`);
+                        }
+                    }
+                }
+            } catch (e) {
+                $.logErr(e, resp);
+            } finally {
+                resolve();
+            }
+        });
+    });
+}
+
+//猜个股涨跌奖励
+async function appGuessStockAward(guessDate) {
+    rndtime = Math.round(curTime.getTime())
+    return new Promise((resolve) => {
+        let url = {
+            url: `https://zqact.tenpay.com/cgi-bin/activity/activity.fcgi?activity=guess_new&action=guess_stock_reward&guess_date=${guessDate}&channel=1&_=${rndtime}&openid=${app_openid}&fskey=${app_fskey}&access_token=${app_token}&_appName=${app_appName}&_appver=${app_appver}&_osVer=${app_osVer}&_devId=${app_devId}`,
+            headers: {
+                'Cookie': app_ck,
+                'Accept': `application/json, text/plain, */*`,
+                'Connection': `keep-alive`,
+                'Referer': `https://zqact.tenpay.com/activity/page/guessRiseFall/`,
+                'Accept-Encoding': `gzip, deflate, br`,
+                'Host': `zqact.tenpay.com`,
+                'User-Agent': app_UA,
+                'Accept-Language': `zh-cn`
+            },
+        };
+        $.get(url, async (err, resp, data) => {
+            try {
+                if (err) {
+                    console.log("腾讯自选股: API查询请求失败 ‼️‼️");
+                    console.log(JSON.stringify(err));
+                    $.logErr(err);
+                } else {
+                    if (safeGet(data)) {
+                        let result = JSON.parse(data);
+                        if(logDebug) console.log(result)
+                        if(result.retcode == 0) {
+                            if(result.stock_rewards && Array.isArray(result.stock_rewards)) {
+                                for(let i=0; i<result.stock_rewards.length; i++) {
+                                    let rewardItem = result.stock_rewards[i]
+                                    console.log(rewardItem)
+                                    $.log(`猜中${rewardItem.stock_name}涨跌获得：${rewardItem.reward_desc}\n`);
+                                }
+                            }
+                            $.log(`总奖励：${result.stock_reward_desc}\n`);
+                        } else {
+                            $.log(`获得个股猜涨跌奖励失败：${result.retmsg}\n`);
                         }
                     }
                 }
