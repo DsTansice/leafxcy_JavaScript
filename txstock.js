@@ -4,7 +4,8 @@
 只适配了IOS，测试了青龙和V2P，其他平台请自行测试，安卓请自行测试
 多用户用#隔开
 
-脚本只会在10点到13点之间进行猜涨跌，请务必在这段时间内跑一次脚本，猜涨跌开奖时间为15:15
+脚本只会在10点到13点之间进行猜涨跌，请务必在这段时间内跑一次脚本
+上证和个股猜涨跌开奖时间为15:15和16:30，建议16:30后再跑一次领奖
 有些任务会提示任务完成发奖失败 -- 可以忽略
 或者任务完成前置条件不符合 -- 一般为需要分享，会在完成日常任务后尝试做互助
 
@@ -37,7 +38,7 @@ MITM: wzq.tenpay.com
 圈X：
 [task_local]
 #腾讯自选股
-16 12,15 * * * txstock.js, tag=腾讯自选股, enabled=true
+35 11,16 * * * txstock.js, tag=腾讯自选股, enabled=true
 [rewrite_local]
 #获取APP和微信微证券的URL和header
 https://wzq.tenpay.com/cgi-bin/activity_task_daily.fcgi? url script-request-header https://raw.githubusercontent.com/leafxcy/JavaScript/main/txstock.js
@@ -83,6 +84,12 @@ let helpUser = 0
 let scanList = []
 let nickname = []
 let bullStatusFlag = 0
+
+let guessOption = 0
+let guessStockFlag = 0
+let stockName = ''
+let stockList = []
+let marketCode = {'sz':0, 'sh':1, 'hk':2, }
 
 let appShareFlag = 1
 let wxShareFlag = 1
@@ -374,13 +381,17 @@ async function getEnvParam(userNum)
     app_UA = ""
     Object.keys(appHeaderArrVal).forEach((item) => {
         if(item.toLowerCase() == "cookie") {
-            app_ck = appHeaderArrVal[item]
+            //app_ck = appHeaderArrVal[item]
+            cookie = appHeaderArrVal[item]
+            pgv_info_ssid = cookie.match(/pgv_info=ssid=([\w]+)/)[1]
+            pgv_pvid = cookie.match(/pgv_pvid=([\w]+)/)[1]
+            ts_sid = cookie.match(/ts_sid=([\w]+)/)[1]
+            ts_uid = cookie.match(/ts_uid=([\w]+)/)[1]
         } else if(item.toLowerCase() == "user-agent") {
             app_UA = appHeaderArrVal[item]
         }
     })
-    app_ck = appHeaderArrVal["Cookie"]
-    app_UA = appHeaderArrVal["User-Agent"]
+    app_ck = `pgv_info=ssid=${pgv_info_ssid}; pgv_pvid=${pgv_pvid}; ts_sid=${ts_sid}; ts_uid=${ts_uid}`
     
     wx_ck_tmp = ""
     wx_UA = ""
@@ -1977,10 +1988,11 @@ async function appGuessStatus() {
     curTime = new Date()
     rndtime = Math.round(curTime.getTime())
     currentHour = curTime.getHours()
-    let isGuessTime = ((currentHour < 13) && (currentHour > 9)) ? 1 : 0
+    currentDay = curTime.getDay()
+    let isGuessTime = ((currentHour < 13) && (currentHour > 9) && (currentDay < 6)) ? 1 : 0
     return new Promise((resolve) => {
         let url = {
-            url: `https://zqact.tenpay.com/cgi-bin/guess_home.fcgi?channel=1&source=2&new_version=2&_=${rndtime}&openid=${app_openid}&fskey=${app_fskey}&access_token=${app_token}&_appName=${app_appName}&_appver=${app_appver}&_osVer=${app_osVer}&_devId=${app_devId}`,
+            url: `https://zqact.tenpay.com/cgi-bin/guess_home.fcgi?channel=1&source=2&new_version=3&_=${rndtime}&openid=${app_openid}&fskey=${app_fskey}&access_token=${app_token}&_appName=${app_appName}&_appver=${app_appver}&_osVer=${app_osVer}&_devId=${app_devId}`,
             headers: {
                 'Cookie': app_ck,
                 'Accept': `application/json, text/plain, */*`,
@@ -2017,24 +2029,34 @@ async function appGuessStatus() {
                             if(isGuessTime) {
                                 if((result.T_info && result.T_info[0] && result.T_info[0].user_answer == 0) || 
                                    (result.T1_info && result.T1_info[0] && result.T1_info[0].user_answer == 0)) {
-                                    let guessOption = 1
-                                    if(result.stockinfo && result.stockinfo[0]) {
-                                        guessOption = (result.stockinfo[0].zdf.indexOf('-') > -1) ? 2 : 1
-                                        let guessStr = (guessOption == 2) ? "跌" : "涨"
-                                        $.log(`当前上证指数涨幅为${result.stockinfo[0].zdf}%，为你猜${guessStr}\n`);
-                                    } else {
-                                        $.log(`未获取到上证指数状态，默认为你猜涨\n`);
-                                    }
                                     if(result.date_list) {
                                         for(let i=0; i<result.date_list.length; i++) {
                                             let guessItem = result.date_list[i]
                                             if(guessItem.status == 3 && guessItem.date == todayDate) {
-                                                await appGuessRiseFall(guessOption,guessItem.date)
+                                                guessOption = 1 //1=涨, 2=跌
+                                                stockName = ''
+                                                await $.wait(100)
+                                                await appGetStockInfo('000001',marketCode['sh'])
+                                                if(guessOption > 0) {
+                                                    await $.wait(100)
+                                                    await appGuessRiseFall(guessOption,guessItem.date)
+                                                } else {
+                                                    $.log(`获取猜涨跌错误：guessOption=${guessOption}\n`);
+                                                }
                                             }
                                         }
                                     }
                                 } else {
-                                    $.log(`已竞猜当期涨跌\n`);
+                                    $.log(`已竞猜当期上证指数涨跌\n`);
+                                }
+                                if(result.recommend && Array.isArray(result.recommend)) {
+                                    recList = result.recommend
+                                    stockList = recList.sort(function(a,b){return Math.abs(b["zdf"])-Math.abs(a["zdf"])});
+                                    guessStockFlag = 1
+                                    for(let k=0; k<stockList.length && guessStockFlag == 1; k++) {
+                                        await $.wait(100)
+                                        await appGuessStockStatus(stockList[k])
+                                    }
                                 }
                             } else {
                                 $.log(`脚本只会在10点到13点之间进行竞猜，当前为非竞猜时段\n`);
@@ -2055,6 +2077,60 @@ async function appGuessStatus() {
                             $.log(`获取用户 ${nickname[numUser]} 的猜涨跌状态失败：${result.retmsg}\n`);
                         }
                         await $.wait(1000)
+                    }
+                }
+            } catch (e) {
+                $.logErr(e, resp);
+            } finally {
+                resolve();
+            }
+        });
+    });
+}
+
+//个股涨跌幅
+//markets: 0 -- sz, 1 -- sh, 2 -- hk
+async function appGetStockInfo(scode,markets) {
+    rndtime = Math.round(curTime.getTime())
+    return new Promise((resolve) => {
+        let url = {
+            url: `https://zqact.tenpay.com/cgi-bin/open_stockinfo.fcgi?scode=${scode}&markets=${markets}&needfive=0&needquote=1&needfollow=0&type=0&channel=1&_=${rndtime}&openid=${app_openid}&fskey=${app_fskey}&access_token=${app_token}&_appName=${app_appName}&_appver=${app_appver}&_osVer=${app_osVer}&_devId=${app_devId}`,
+            headers: {
+                'Cookie': app_ck,
+                'Accept': `*/*`,
+                'Connection': `keep-alive`,
+                'Referer': `https://zqact.tenpay.com/activity/page/guessRiseFall/`,
+                'Accept-Encoding': `gzip, deflate, br`,
+                'Host': `zqact.tenpay.com`,
+                'User-Agent': app_UA,
+                'Accept-Language': `zh-cn`,
+            },
+        };
+        
+        $.get(url, async (err, resp, data) => {
+            try {
+                data = data.replace(/\\x/g,'')
+                if (err) {
+                    console.log("腾讯自选股: API查询请求失败 ‼️‼️");
+                    console.log(JSON.stringify(err));
+                    $.logErr(err);
+                } else {
+                    if (safeGet(data)) {
+                        let result = JSON.parse(data);
+                        if(logDebug) console.log(result)
+                        if(result.retcode == 0) {
+                            stockName = result.secu_info.secu_name || ''
+                            if(stockName) {
+                                let dqj = result.secu_quote.dqj || 0
+                                let zsj = result.secu_quote.zsj || 0
+                                let raise = dqj - zsj
+                                let ratio = raise/zsj*100
+                                let guessStr = (raise < 0) ? '跌' : '涨'
+                                $.log(`${stockName}：当前价格${dqj}，前天收市价${zsj}，涨幅${Math.floor(ratio*100)/100}% (${Math.floor(raise*100)/100})，猜${guessStr}`);
+                            }
+                        } else {
+                            $.log(`获取个股信息失败：${result.retmsg}`);
+                        }
                     }
                 }
             } catch (e) {
@@ -2138,9 +2214,9 @@ async function appGuessRiseFall(answer,guessDate) {
                         if(logDebug) console.log(result)
                         guessStr = (answer==1) ? "猜涨" : "猜跌"
                         if(result.retcode == 0) {
-                            $.log(`用户 ${nickname[numUser]} 猜涨跌成功：${guessStr}\n`);
+                            $.log(`上证指数 猜涨跌成功：${guessStr}\n`);
                         } else {
-                            $.log(`用户 ${nickname[numUser]} ${guessStr}失败：${result.retmsg}\n`);
+                            $.log(`上证指数 ${guessStr}失败：${result.retmsg}\n`);
                         }
                     }
                 }
@@ -2152,6 +2228,109 @@ async function appGuessRiseFall(answer,guessDate) {
         });
     });
 }
+
+//猜个股涨跌次数
+async function appGuessStockStatus(stockItem) {
+    rndtime = Math.round(new Date().getTime())
+    return new Promise((resolve) => {
+        let url = {
+            url: `https://wzq.tenpay.com/cgi-bin/guess_home.fcgi?access_token=${app_token}&openid=${app_openid}&fskey=${app_fskey}&check=11&_dev=iPhone13,2&_devId=${app_devId}&_appver=${app_appver}&_osVer=${app_osVer}&_appName=${app_appName}&source=3&channel=1&symbol=${stockItem.symbol}&new_version=3`,
+            headers: {
+                'Cookie': app_ck,
+                'Accept': `application/json, text/plain, */*`,
+                'Connection': `keep-alive`,
+                'Referer': `https://zqact.tenpay.com/activity/page/guessRiseFall/`,
+                'Accept-Encoding': `gzip, deflate, br`,
+                'Host': `zqact.tenpay.com`,
+                'User-Agent': app_UA,
+                'Accept-Language': `zh-cn`
+            },
+        };
+        $.get(url, async (err, resp, data) => {
+            try {
+                if (err) {
+                    console.log("腾讯自选股: API查询请求失败 ‼️‼️");
+                    console.log(JSON.stringify(err));
+                    $.logErr(err);
+                } else {
+                    if (safeGet(data)) {
+                        let result = JSON.parse(data);
+                        if(logDebug) console.log(result)
+                        if(result.retcode == 0) {
+                            $.log(`剩余猜个股涨跌次数：${result.guess_times_left}`);
+                            if(result.guess_times_left > 0) {
+                                if(result.T_info.user_answer > 0) {
+                                    $.log(`已竞猜：${stockItem.stockname}\n`);
+                                } else {
+                                    let guessStr = (stockItem.zdf < 0) ? '跌' : '涨'
+                                    let answer = (stockItem.zdf < 0) ? 2 : 1
+                                    console.log(`${stockItem.stockname}今天涨幅为${stockItem.zdf}%，猜${guessStr}`)
+                                    await $.wait(1000)
+                                    await appGuessStock(stockItem,answer)
+                                }
+                            } else {
+                                $.log(`竞猜个股次数已用完\n`);
+                                guessStockFlag = 0
+                            }
+                        } else {
+                            $.log(`获取猜个股涨跌次数失败：${result.retmsg}\n`);
+                        }
+                    }
+                }
+            } catch (e) {
+                $.logErr(e, resp);
+            } finally {
+                resolve();
+            }
+        });
+    });
+}
+
+//猜个股涨跌
+async function appGuessStock(stockItem,answer) {
+    rndtime = Math.round(curTime.getTime())
+    return new Promise((resolve) => {
+        let url = {
+            url: `https://wzq.tenpay.com/cgi-bin/guess_op.fcgi?access_token=${app_token}&openid=${app_openid}&fskey=${app_fskey}&check=11&_dev=iPhone13,2&_devId=${app_devId}&_appver=${app_appver}&_osVer=${app_osVer}&_appName=${app_appName}&`,
+            headers: {
+                'Cookie': app_ck,
+                'Accept': `application/json, text/plain, */*`,
+                'Connection': `keep-alive`,
+                'Referer': `https://zqact.tenpay.com/activity/page/guessRiseFall/`,
+                'Accept-Encoding': `gzip, deflate, br`,
+                'Host': `zqact.tenpay.com`,
+                'User-Agent': app_UA,
+                'Accept-Language': `zh-cn`
+            },
+            body: `source=3&channel=1&outer_src=0&new_version=3&symbol=${stockItem.symbol}&date=${todayDate}&action=2&user_answer=${answer}&access_token=${app_token}&openid=${app_openid}&fskey=${app_fskey}&check=11&`,
+        };
+        $.post(url, async (err, resp, data) => {
+            try {
+                if (err) {
+                    console.log("腾讯自选股: API查询请求失败 ‼️‼️");
+                    console.log(JSON.stringify(err));
+                    $.logErr(err);
+                } else {
+                    if (safeGet(data)) {
+                        let result = JSON.parse(data);
+                        if(logDebug) console.log(result)
+                        let guessStr = (answer==1) ? "猜涨" : "猜跌"
+                        if(result.retcode == 0) {
+                            $.log(`${stockItem.stockname} 猜涨跌成功：${guessStr}\n`);
+                        } else {
+                            $.log(`${stockItem.stockname} ${guessStr}失败：${result.retmsg}\n`);
+                        }
+                    }
+                }
+            } catch (e) {
+                $.logErr(e, resp);
+            } finally {
+                resolve();
+            }
+        });
+    });
+}
+
 ////////////////////////////////////////////////////////////////////
 
 function time(time) {
