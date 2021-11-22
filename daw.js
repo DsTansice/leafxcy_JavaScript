@@ -41,6 +41,7 @@ let httpResult //global buffer
 let userToken = ''
 let userIdx = 0
 let numBoxbody = 0
+let coinStatus = []
 
 let maxTryNum = 12
 let waitTime = 0
@@ -75,6 +76,7 @@ let vipLevel = 0
         for(channelIdx=0; channelIdx<channel.length; channelIdx++) {
             for(userIdx=0; userIdx<numBoxbody; userIdx++) {
                 if(await QueryVipInfo()) {
+                    if(!coinStatus[channelIdx*numBoxbody+userIdx]) coinStatus.push(1)
                     await $.wait(100)
                     await QueryWarehouse()
                 }
@@ -89,9 +91,13 @@ let vipLevel = 0
                 waitTime = 65*1000
                 
                 for(userIdx=0; userIdx<numBoxbody; userIdx++) {
-                    if(await QueryVipInfo()) {
-                        console.log(`账户${userIdx+1}${channelStr[channelIdx]} ${userName}：`)
-                        await QueryCoinInfo(1)
+                    if(coinStatus[channelIdx*numBoxbody+userIdx] == 1) {
+                        if(await QueryVipInfo()) {
+                            console.log(`账户${userIdx+1}${channelStr[channelIdx]} ${userName}：`)
+                            await QueryCoinInfo(1)
+                        }
+                    } else {
+                        console.log(`账户${userIdx+1}${channelStr[channelIdx]} ${userName}：DAB已满且暂时无法投入分红池，暂停做任务`)
                     }
                 }
                 
@@ -373,6 +379,17 @@ async function ReceiveCoin(taskItem) {
         console.log(`完成任务【${taskItem.title}】，领取DAB币成功`)
     } else {
         console.log(`完成任务【${taskItem.title}】失败：${result.error}`)
+        if(result.error.indexOf('当前仓库已存满') > -1) {
+            let idx = channelIdx*numBoxbody+userIdx
+            if(coinStatus[idx] == 1) {
+                console.log(`仓库已存满，尝试先投入分红池`)
+                coinStatus[idx] = 2
+                await $.wait(100)
+                await QueryCoinInfo(0)
+            } else if(coinStatus[idx] == 2) {
+                console.log(`仓库已存满，且无法投入分红池，此用户暂时不再做任务`)
+            }
+        }
     }
 }
 
@@ -464,6 +481,17 @@ async function ReceiveTurntable(taskItem) {
         console.log(`看视频获得抽奖翻倍奖励成功`)
     } else {
         console.log(`看视频获得抽奖翻倍奖励失败：${result.error}`)
+        if(result.error.indexOf('当前仓库已存满') > -1) {
+            let idx = channelIdx*numBoxbody+userIdx
+            if(coinStatus[idx] == 1) {
+                console.log(`仓库已存满，尝试先投入分红池`)
+                coinStatus[idx] = 2
+                await $.wait(100)
+                await QueryCoinInfo(0)
+            } else if(coinStatus[idx] == 2) {
+                console.log(`仓库已存满，且无法投入分红池，此用户暂时不再做任务`)
+            }
+        }
     }
 }
 
@@ -479,6 +507,7 @@ async function PutInPool(num,pool_lv) {
     if(result.code == 200) {
         console.log(`投入瓜分池${num}币成功`)
         notifyStr += `投入瓜分池${num}币成功\n`
+        coinStatus[idx] = 1
     } else {
         console.log(`投入瓜分池${num}币失败：${result.error}`)
     }
@@ -641,10 +670,10 @@ async function QueryWithdrawBox(page) {
             let sortList = withList.sort(function(a,b){return b["money"]-a["money"]});
             for(let i=0; i<sortList.length; i++) {
                 let withItem = sortList[i]
-                if(is_bind_wechat == 1 && withItem.is_wechat == 1) {
+                if(withItem.money > 0.5 && is_bind_wechat == 1 && withItem.is_wechat == 1) {
                     await $.wait(100)
                     if(await WithdrawBox(withItem,1)) break;
-                } else if(is_bind_alipay == 1 && withItem.is_alipay == 1) {
+                } else if(withItem.money > 0.5 && is_bind_alipay == 1 && withItem.is_alipay == 1) {
                     await $.wait(100)
                     if(await WithdrawBox(withItem,0)) break;
                 }
