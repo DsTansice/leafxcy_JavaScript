@@ -118,7 +118,7 @@ let vipLevel = 0
             for(userIdx=0; userIdx<numBoxbody; userIdx++) {
                 if(await QueryVipInfo()) {
                     console.log(`\n============= 账户${userIdx+1}${channelStr[channelIdx]}： ${userName} =============`)
-                    notifyStr += `\n============= 账户${userIdx+1}${channelStr[channelIdx]}： ${userName} =============\n`
+                    notifyStr += `\n账户${userIdx+1}${channelStr[channelIdx]}： ${userName}\n`
                     
                     await $.wait(100)
                     await QuerySignList()
@@ -507,7 +507,7 @@ async function PutInPool(num,pool_lv) {
     if(result.code == 200) {
         console.log(`投入瓜分池${num}币成功`)
         notifyStr += `投入瓜分池${num}币成功\n`
-        coinStatus[idx] = 1
+        coinStatus[channelIdx*numBoxbody+userIdx] = 1
     } else {
         console.log(`投入瓜分池${num}币失败：${result.error}`)
     }
