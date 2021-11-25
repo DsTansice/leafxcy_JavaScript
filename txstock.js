@@ -386,7 +386,7 @@ async function getEnvParam(userNum)
         if(item.toLowerCase() == "cookie") {
             //app_ck = appHeaderArrVal[item]
             cookie = appHeaderArrVal[item]
-            pgv_info_ssid = cookie.match(/pgv_info=ssid=([\w]+)/)[1]
+            //pgv_info_ssid = cookie.match(/pgv_info=ssid=([\w]+)/)[1]
             pgv_pvid = cookie.match(/pgv_pvid=([\w]+)/)[1]
             ts_sid = cookie.match(/ts_sid=([\w]+)/)[1]
             ts_uid = cookie.match(/ts_uid=([\w]+)/)[1]
@@ -394,7 +394,7 @@ async function getEnvParam(userNum)
             app_UA = appHeaderArrVal[item]
         }
     })
-    app_ck = `pgv_info=ssid=${pgv_info_ssid}; pgv_pvid=${pgv_pvid}; ts_sid=${ts_sid}; ts_uid=${ts_uid}`
+    app_ck = `pgv_pvid=${pgv_pvid}; ts_sid=${ts_sid}; ts_uid=${ts_uid}`
     
     wx_ck_tmp = ""
     wx_UA = ""
@@ -410,8 +410,8 @@ async function getEnvParam(userNum)
     pgv_pvid = wx_ck_tmp.match(/pgv_pvid=([\w]+)/)[1]
     //ts_last = wx_ck_tmp.match(/ts_last=([\w\/]+)/)[1]
     //ts_refer = wx_ck_tmp.match(/ts_refer=([\w\/\.]+)/)[1]
-    ts_sid = wx_ck_tmp.match(/ts_sid=([\w]+)/)[1]
-    ts_uid = wx_ck_tmp.match(/ts_uid=([\w]+)/)[1]
+    //ts_sid = wx_ck_tmp.match(/ts_sid=([\w]+)/)[1]
+    //ts_uid = wx_ck_tmp.match(/ts_uid=([\w]+)/)[1]
     qlappid = wx_ck_tmp.match(/qlappid=([\w]+)/)[1]
     qlskey = wx_ck_tmp.match(/qlskey=([\w]+)/)[1]
     qluin = wx_ck_tmp.match(/qluin=([\w@\.]+)/)[1]
@@ -423,7 +423,7 @@ async function getEnvParam(userNum)
     
     //wx_ck = `pgv_info=${pgv_info}; pgv_pvid=${pgv_pvid}; ts_last=${ts_last}; ts_refer=${ts_refer}; ts_sid=${ts_sid}; ts_uid=${ts_uid}; qlappid=${qlappid}; qlskey=${qlskey}; qluin=${qluin}; qq_logtype=${qq_logtype}; wx_session_time=${sessionTime}; wzq_qlappid=${wzq_qlappid}; wzq_qlskey=${wzq_qlskey}; wzq_qluin=${wzq_qluin}; zxg_openid=${zxg_openid}`
     
-    wx_ck = `pgv_info=${pgv_info}; pgv_pvid=${pgv_pvid}; ts_sid=${ts_sid}; ts_uid=${ts_uid}; qlappid=${qlappid}; qlskey=${qlskey}; qluin=${qluin}; wzq_qlappid=${wzq_qlappid}; wzq_qlskey=${wzq_qlskey}; wzq_qluin=${wzq_qluin}; zxg_openid=${zxg_openid}`
+    wx_ck = `pgv_info=${pgv_info}; pgv_pvid=${pgv_pvid}; qlappid=${qlappid}; qlskey=${qlskey}; qluin=${qluin}; wzq_qlappid=${wzq_qlappid}; wzq_qlskey=${wzq_qlskey}; wzq_qluin=${wzq_qluin}; zxg_openid=${zxg_openid}`
 }
 
 async function initAccountInfo()
