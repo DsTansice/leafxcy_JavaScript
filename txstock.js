@@ -2139,6 +2139,7 @@ async function appGetStockInfo(scode,markets) {
                                 let raise = dqj - zsj
                                 let ratio = raise/zsj*100
                                 let guessStr = (raise < 0) ? '跌' : '涨'
+                                guessOption = (raise < 0) ? 2 : 1
                                 $.log(`${stockName}：当前价格${dqj}，前天收市价${zsj}，涨幅${Math.floor(ratio*100)/100}% (${Math.floor(raise*100)/100})，猜${guessStr}`);
                             }
                         } else {
