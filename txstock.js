@@ -2279,6 +2279,7 @@ async function appGuessRiseFall(answer,guessDate) {
                         let result = JSON.parse(data);
                         if(logDebug) console.log(result)
                         guessStr = (answer==1) ? "猜涨" : "猜跌"
+                        guessOption = (raise < 0) ? 2 : 1
                         if(result.retcode == 0) {
                             $.log(`上证指数 猜涨跌成功：${guessStr}\n`);
                         } else {
