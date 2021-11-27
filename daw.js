@@ -1,7 +1,7 @@
 /*
 IOS/安卓：都爱玩
 下载注册地址，微信打开：
-https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx592b7bf2a9f7f003&redirect_uri=https://v3.sdk.haowusong.com/api/auth/wechat/sharelogin&response_type=code&scope=snsapi_userinfo&state=AAABQKAW,dawbox-android#wechat_redirect
+https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx592b7bf2a9f7f003&redirect_uri=https://v3.sdk.haowusong.com/api/auth/wechat/sharelogin&response_type=code&scope=snsapi_userinfo&state=AAABRKAD,dawbox-android#wechat_redirect
 
 炒个冷饭，之前有几位大佬已经写过了
 现在支持了苹果和安卓双端的任务，两边账户分红币独立，理论上收益可以翻倍，每天2块多到3块的样子，不过提现次数似乎两边共用
