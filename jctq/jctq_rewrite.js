@@ -1,26 +1,28 @@
 /*
-安卓：晶彩天气(v8.3.7)
+安卓：水果天气(v8.3.9)
 
 此脚本负责：捉包重写
 
 脚本会自动提现，如果不想自动提现的，请不要捉提现body，或者新建环境变量jctqWithdrawFlag，写成0
 
 重写：
-https://tq.xunsl.com/v17/NewTask/getTaskListByWeather.json  -- 点开福利页即可获取jctqCookie
-https://tq.xunsl.com/v5/CommonReward/toGetReward.json       -- 签到，和福利页任务奖励（目前应该只有激励视频和20篇文章的奖励），获取完建议关掉重写
+https://tq.xunsl.com/v17/NewTask/getTaskListByWeather.json  -- 点开任务页即可获取jctqCookie
+https://tq.xunsl.com/v5/CommonReward/toGetReward.json       -- 领取签到和任务奖励后获取。首页左方点击福利视频浮窗（一共5次，建议捉到第一个后复制4遍）。获取完建议关掉重写
 https://tq.xunsl.com/v5/article/info.json                   -- 点开文章获取文章body，获取完建议关掉重写
 https://tq.xunsl.com/v5/article/detail.json                 -- 点开视频获取视频body，获取完建议关掉重写
-https://tq.xunsl.com/v5/user/stay.json                      -- 阅读文章或者看视频一段时间后可以获取到时长body，获取完务必关掉重写
-https://tq.xunsl.com/v5/nameless/adlickstart.json           -- 点开看看赚获取body，可以一直开着，脚本会自动删除重复和失效body
-https://tq.xunsl.com/v5/Weather/giveBoxOnWeather.json       -- 点开福利页浮窗宝箱和观看翻倍视频获取body，获取完建议关掉重写
-https://tq.xunsl.com/v5/weather/giveTimeInterval.json       -- 点开首页气泡红包和观看翻倍视频获取body，获取完建议关掉重写
+https://tq.xunsl.com/v5/user/stay.json                      -- 阅读文章或者看视频一段时间后可以获取到时长body，获取完务必关掉重写，同一个账号不要获取多个时长body
+https://tq.xunsl.com/v5/nameless/adlickstart.json           -- 点开看看赚获取body，可以一直开着，看看赚会不定时更新
+https://tq.xunsl.com/v5/Weather/giveBoxOnWeather.json       -- （旧版8.3.7）点开福利页浮窗宝箱和观看翻倍视频获取body，获取完建议关掉重写
+https://tq.xunsl.com/v5/weather/giveTimeInterval.json       -- （旧版8.3.7）点开首页气泡红包和观看翻倍视频获取body，获取完建议关掉重写
+https://tq.xunsl.com/v5/Weather/giveReceiveGoldCoin.json    -- 任务页点击一键收金币获取第一个body，收金币后看完视频领奖励获取第二个body
+https://tq.xunsl.com/v17/Rvideo/videoCallback.json          -- 资讯页右上角宝箱，看视频领取奖励后获取
 https://tq.xunsl.com/v5/wechat/withdraw2.json               -- 提现一次对应金额获取body
 https://tq.xunsl.com/v5/CommonReward/toDouble.json          -- 领取签到翻倍奖励后可获取
 
 任务：
-jctq_daily.js   -- 领转发页定时宝箱，领福利页定时宝箱，领首页气泡红包，时段转发，刷福利视频，抽奖5次
-jctq_reward.js  -- 签到和翻倍，任务奖励领取，统计今日收益，自动提现
-jctq_kkz.js     -- 完成看看赚任务，删除重复和失效的body
+jctq_daily.js   -- 各种时段奖励，抽奖，转发
+jctq_reward.js  -- 签到和翻倍，任务奖励领取，领首页福利视频奖励，首页统计今日收益，自动提现
+jctq_kkz.js     -- 完成看看赚任务
 jctq_read.js    -- 阅读文章，浏览视频
 
 */
@@ -39,6 +41,8 @@ let jctqWithdraw = ($.isNode() ? process.env.jctqWithdraw : $.getdata('jctqWithd
 let jctqBubbleBody = ($.isNode() ? process.env.jctqBubbleBody : $.getdata('jctqBubbleBody')) || '';
 let jctqGiveBoxBody = ($.isNode() ? process.env.jctqGiveBoxBody : $.getdata('jctqGiveBoxBody')) || '';
 let jctqSignDoubleBody = ($.isNode() ? process.env.jctqSignDoubleBody : $.getdata('jctqSignDoubleBody')) || '';
+let jctqGoldBody = ($.isNode() ? process.env.jctqGoldBody : $.getdata('jctqGoldBody')) || '';
+let jctqVideoBody = ($.isNode() ? process.env.jctqVideoBody : $.getdata('jctqVideoBody')) || '';
 
 ///////////////////////////////////////////////////////////////////
 
@@ -77,7 +81,7 @@ async function getRewrite() {
             }
         } else {
             $.setdata(newCookie, 'jctqCookie');
-            $.msg(jsname+` 获取第1个jctqCookie成功`)
+            $.msg(jsname+` 获取第一个jctqCookie成功`)
         }
     }
     
@@ -94,7 +98,7 @@ async function getRewrite() {
             }
         } else {
             $.setdata(rBody, 'jctqBoxbody');
-            $.msg(jsname+` 获取第1个签到/奖励body成功`)
+            $.msg(jsname+` 获取第一个签到/奖励body成功`)
         }
     }
     
@@ -114,7 +118,7 @@ async function getRewrite() {
             }
         } else {
             $.setdata(rBody, 'jctqWzBody');
-            $.msg(jsname+` 获取第1个文章/视频body成功`)
+            $.msg(jsname+` 获取第一个文章/视频body成功`)
         }
     }
     
@@ -131,7 +135,7 @@ async function getRewrite() {
             }
         } else {
             $.setdata(rBody, 'jctqTimeBody');
-            $.msg(jsname+` 获取第1个时长body成功`)
+            $.msg(jsname+` 获取第一个时长body成功`)
         }
     }
     
@@ -148,7 +152,7 @@ async function getRewrite() {
             }
         } else {
             $.setdata(rBody, 'jctqLookStartbody');
-            $.msg(jsname+` 获取第1个看看赚body成功`)
+            $.msg(jsname+` 获取第一个看看赚body成功`)
         }
     }
     
@@ -165,7 +169,7 @@ async function getRewrite() {
             }
         } else {
             $.setdata(rBody, 'jctqWithdraw');
-            $.msg(jsname+` 获取第1个提现body成功`)
+            $.msg(jsname+` 获取第一个提现body成功`)
         }
     }
     
@@ -182,7 +186,7 @@ async function getRewrite() {
             }
         } else {
             $.setdata(rBody, 'jctqGiveBoxBody');
-            $.msg(jsname+` 获取第1个福利页宝箱/翻倍body成功`)
+            $.msg(jsname+` 获取第一个福利页宝箱/翻倍body成功`)
         }
     }
     
@@ -199,7 +203,7 @@ async function getRewrite() {
             }
         } else {
             $.setdata(rBody, 'jctqBubbleBody');
-            $.msg(jsname+` 获取第1个首页气泡/翻倍body成功`)
+            $.msg(jsname+` 获取第一个首页气泡/翻倍body成功`)
         }
     }
     
@@ -216,7 +220,41 @@ async function getRewrite() {
             }
         } else {
             $.setdata(rBody, 'jctqSignDoubleBody');
-            $.msg(jsname+` 获取第1个签到翻倍body成功`)
+            $.msg(jsname+` 获取第一个签到翻倍body成功`)
+        }
+    }
+    
+    if($request.url.indexOf('v5/Weather/giveReceiveGoldCoin.json') > -1) {
+        rBody = $request.body
+        if(jctqGoldBody) {
+            if(jctqGoldBody.indexOf(rBody) > -1) {
+                $.msg(jsname+` 此收金币body已存在，本次跳过`)
+            } else {
+                jctqGoldBody = jctqGoldBody + '&' + rBody
+                $.setdata(jctqGoldBody, 'jctqGoldBody');
+                bodyList = jctqGoldBody.split('&')
+                $.msg(jsname+` 获取第${bodyList.length}个收金币body成功`)
+            }
+        } else {
+            $.setdata(rBody, 'jctqGoldBody');
+            $.msg(jsname+` 获取第一个收金币body成功`)
+        }
+    }
+    
+    if($request.url.indexOf('v17/Rvideo/videoCallback.json') > -1) {
+        rBody = $request.body
+        if(jctqVideoBody) {
+            if(jctqVideoBody.indexOf(rBody) > -1) {
+                $.msg(jsname+` 此资讯页视频奖励body已存在，本次跳过`)
+            } else {
+                jctqVideoBody = jctqVideoBody + '@' + rBody
+                $.setdata(jctqVideoBody, 'jctqVideoBody');
+                bodyList = jctqVideoBody.split('@')
+                $.msg(jsname+` 获取第${bodyList.length}个资讯页视频奖励body成功`)
+            }
+        } else {
+            $.setdata(rBody, 'jctqVideoBody');
+            $.msg(jsname+` 获取第一个资讯页视频奖励body成功`)
         }
     }
 }

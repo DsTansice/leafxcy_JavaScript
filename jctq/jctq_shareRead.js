@@ -134,7 +134,7 @@ function replaceCookie(jctqCookieItem) {
         jctqCookieItem = jctqCookieItem.replace(/zqkey_id=/, "cookie_id=")
     }
     if(jctqCookieItem.indexOf('app_version=') == -1) {
-        jctqCookieItem = 'app_version=8.3.7&' + jctqCookieItem
+        jctqCookieItem = 'app_version=8.3.9&' + jctqCookieItem
     }
     return jctqCookieItem
 }
