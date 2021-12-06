@@ -117,7 +117,7 @@ function replaceCookie(userCookieItem) {
 //风险信息
 async function RunRiskInfo() {
     for(userIdx=0; userIdx<userCookieArr.length; userIdx++) {
-        console.log(`\n===== 查询用户${userIdx+1} ${nickname[userIdx]} 风险信息 =====`)
+        notifyStr += `\n===== 查询用户${userIdx+1} ${nickname[userIdx]} 风险信息 =====\n`
         await GetOrderList()
     }
 }
@@ -137,7 +137,7 @@ async function GetOrderList() {
     if(result.status == 1) {
         for(let item of result.data) {
             if(item.description) {
-                console.log(`提现风险信息：${item.add_time_str} ${item.description}`)
+                notifyStr += `提现风险信息：${item.add_time_str} ${item.description}\n`
             }
         }
     } else {
