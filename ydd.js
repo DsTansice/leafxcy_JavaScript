@@ -1,10 +1,10 @@
 /*
 IOS：阅多多/悦看点
-理论上可以直接跑两个APP的账号
+理论上可以直接跑两个APP的账号，每天金币7毛多吧，提现1元和5元需要做任务拿提现券
 阅多多下载注册地址：https://yuekandian.yichengw.cn/download?app=3&referrer=729879
 
 青龙：
-捉取 https://yuekandian.yichengw.cn/api/v1/member/profile 的包里的Authorization，device和User-Agent，按顺序用#连起来写到yddCookie里，多账户用@隔开
+捉取 https://yuekandian.yichengw.cn/api/v1/member/profile 的包里的Authorization(把前面的Bearer删掉)，device和User-Agent，按顺序用#连起来写到yddCookie里，多账户用@隔开
 export yddCookie='账号1的Authorization#device#UA@账号2的Authorization#device#UA'
 
 V2P重写：打开APP即可获取CK，没有的话点一下我的页面或者赚钱页面
@@ -132,10 +132,11 @@ async function GetRewrite() {
 
 async function checkEnv() {
     if(yddCookie) {
+        yddCookie = yddCookie.replace(/Bearer/g,'')
         if(yddCookie.indexOf('@') > -1) {
             let yddCookies = yddCookie.split('@')
             for(let i=0; i<yddCookies.length; i++) {
-                yddCookieArr.push(yddCookies[i].replace(/Bearer /g,''))
+                yddCookieArr.push(yddCookies[i])
             }
         } else {
             yddCookieArr.push(yddCookie)
