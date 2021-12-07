@@ -1,7 +1,10 @@
 /*
 IOS：阅多多/悦看点
-理论上可以直接跑两个APP的账号，每天金币7毛多吧，提现1元和5元需要做任务拿提现券
+理论上可以直接跑两个APP的账号，每天金币7毛以上，提现1元和5元需要做任务拿提现券
 阅多多下载注册地址：https://yuekandian.yichengw.cn/download?app=3&referrer=729879
+
+默认不提现1块，可以在环境变量yddSkipWithdraw设置不想提现的金额，逗号隔开，填0就会尝试提现所有金额
+export yddSkipWithdraw='1,5'
 
 青龙：
 捉取 https://yuekandian.yichengw.cn/api/v1/member/profile 的包里的Authorization(把前面的Bearer删掉)，device和User-Agent，按顺序用#连起来写到yddCookie里，多账户用@隔开
@@ -37,6 +40,9 @@ let userToken = []
 let userDevice = []
 let userAgent = []
 let userCookie = []
+
+let yddSkipWithdraw = ($.isNode() ? process.env.yddSkipWithdraw : $.getdata('yddSkipWithdraw')) || '1';
+let skipWithdraw = []
 
 let userIdx = 0
 let taskIdx = 0
@@ -155,6 +161,14 @@ async function checkEnv() {
         userToken.push(userItem[0])
         userDevice.push(userItem[1])
         userAgent.push(userItem[2])
+    }
+    
+    if(yddSkipWithdraw) {
+        if(yddSkipWithdraw.indexOf(',') > -1) {
+            skipWithdraw = yddSkipWithdraw.split(',')
+        } else {
+            skipWithdraw.push(yddSkipWithdraw)
+        }
     }
     
     console.log(`共找到${yddCookieArr.length}个用户`)
@@ -808,6 +822,16 @@ async function QueryWithdrawList() {
     if(result.code == 0) {
         let sortList = result.result.items.sort(function(a,b){return b["jine"]-a["jine"]});
         for(let item of sortList) {
+            let skipFlag = 0
+            if(skipWithdraw.length>0) {
+                for(let skipItem of skipWithdraw) {
+                    if(parseInt(item.jine) == parseInt(skipItem)) {
+                        skipFlag = 1
+                        break
+                    }
+                }
+            }
+            if(skipFlag==1) continue
             if(userInfo[userIdx].point>item.jinbi && userInfo[userIdx].ticket>item.cond && item.is_ok==1) {
                 await Withdraw(item.jine)
                 if(withdrawFlag[userIdx]==1) break;
