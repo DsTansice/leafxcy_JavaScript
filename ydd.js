@@ -121,11 +121,11 @@ async function GetRewrite() {
                 yddCookie = yddCookie + '@' + ck
                 $.setdata(yddCookie, 'yddCookie');
                 ckList = yddCookie.split('@')
-                $.msg(jsname+` 获取第${ckList.length}个yddCookie成功`)
+                $.msg(jsname+` 获取第${ckList.length}个yddCookie成功: ${yddCookie}`)
             }
         } else {
             $.setdata(ck, 'yddCookie');
-            $.msg(jsname+` 获取第1个yddCookie成功`)
+            $.msg(jsname+` 获取第1个yddCookie成功: ${ck}`)
         }
     }
 }
