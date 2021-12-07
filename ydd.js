@@ -185,6 +185,7 @@ async function initAccountInfo() {
 
 async function RunMultiUser() {
     let maxCoinNum = 0
+    let maxWaitTime = 0
     let needSign = 0
     let needContSign  = 0
     let needLottery = 0
@@ -376,9 +377,13 @@ async function RunMultiUser() {
     //============= 看小视频 =============
     console.log(`\n准备刷小视频${NUM_PER_ROUND}次...`)
     haveTicket = 0
+    maxWaitTime = 0
     for(userIdx=0; userIdx<yddCookieArr.length; userIdx++) {
         await GetTicket('video?short=1&')
-        if(userTicket[userIdx]) haveTicket=1
+        if(userTicket[userIdx]) {
+            haveTicket=1
+            maxWaitTime = getMax(maxWaitTime,userWaitTime[userIdx])
+        }
     }
     if(haveTicket > 0) {
         for(userIdx=0; userIdx<yddCookieArr.length; userIdx++) {
@@ -389,7 +394,7 @@ async function RunMultiUser() {
             haveTicket = 0
             console.log(`--- 开始刷第${i+1}轮 ---`)
             
-            let waitTime = Math.floor(Math.random()*1000) + userWaitTime*1000
+            let waitTime = Math.floor(Math.random()*1000) + maxWaitTime*1000
             console.log(`随机等待${waitTime/1000}秒...`)
             await $.wait(waitTime)
             for(userIdx=0; userIdx<yddCookieArr.length; userIdx++) {
@@ -411,9 +416,13 @@ async function RunMultiUser() {
     //============= 看资讯 =============
     console.log(`\n准备刷资讯${NUM_PER_ROUND}次...`)
     haveTicket = 0
+    maxWaitTime = 0
     for(userIdx=0; userIdx<yddCookieArr.length; userIdx++) {
         await GetTicket('news/detail?')
-        if(userTicket[userIdx]) haveTicket=1
+        if(userTicket[userIdx]) {
+            haveTicket=1
+            maxWaitTime = getMax(maxWaitTime,userWaitTime[userIdx])
+        }
     }
     if(haveTicket > 0) {
         for(userIdx=0; userIdx<yddCookieArr.length; userIdx++) {
@@ -424,7 +433,7 @@ async function RunMultiUser() {
             haveTicket = 0
             console.log(`--- 开始刷第${i+1}轮 ---`)
             
-            let waitTime = Math.floor(Math.random()*1000) + userWaitTime*1000
+            let waitTime = Math.floor(Math.random()*1000) + maxWaitTime*1000
             console.log(`随机等待${waitTime/1000}秒...`)
             await $.wait(waitTime)
             for(userIdx=0; userIdx<yddCookieArr.length; userIdx++) {
