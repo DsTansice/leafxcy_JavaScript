@@ -147,6 +147,10 @@ async function listsNewTag() {
     
     if(result.status == 1) {
         if(result.data && result.data.items && Array.isArray(result.data.items)) {
+            if(result.data.items.length == 0) {
+                console.log('无法找到转发列表，可能是IP原因')
+                return
+            }
             let shareIdx = Math.floor(Math.random()*result.data.items.length)
             newsItem = result.data.items[shareIdx]
             await $.wait(1000)
