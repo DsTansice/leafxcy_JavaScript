@@ -151,11 +151,6 @@ async function RunMultiUser() {
             for(let adId of adIdList) await ExcitationAd(adId)
             //console.log(validList)
             
-            await ReadDouble()
-            await ListArts()
-            await ReadArticles()
-            
-            
         }
     }
     
