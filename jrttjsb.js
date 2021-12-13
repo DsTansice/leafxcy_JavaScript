@@ -67,7 +67,6 @@ let adIdList = [26, 181, 186, 187, 188, 189, 190, 195, 210, 214, 216, 225, 256, 
         }
         
         await initAccountInfo()
-        
         await RunMultiUser()
     }
   
@@ -171,7 +170,7 @@ async function RunMultiUser() {
     await ReadArticles()
     
     for(userIdx=0; userIdx<userHeaderArr.length; userIdx++) {
-        await QueryUserInfo(0)
+        if(userStatus[userIdx]==true) await QueryUserInfo(0)
     }
 }
 
@@ -199,15 +198,19 @@ async function ListArts() {
 //阅读文章
 async function ReadArticles() {
     for(userIdx=0; userIdx<userHeaderArr.length; userIdx++) {
-        await ReadDouble()
+        if(userStatus[userIdx]==true) await ReadDouble()
     }
     let maxRead = getMin(maxReadPerRun,readList.length)
     console.log(`\n开始阅读，将会阅读${maxRead}篇文章`)
     for(let i=0; i<maxRead; i++) {
+        let readFlag = 0
         for(userIdx=0; userIdx<userHeaderArr.length; userIdx++) {
-            await ReadArtsReward(readList[i])
+            if(userStatus[userIdx]==true) {
+                await ReadArtsReward(readList[i])
+                readFlag = 1
+            }
         }
-        if(i<maxRead-1) {
+        if(readFlag ==1 && i<maxRead-1) {
             console.log('等待15秒阅读下一篇...')
             await $.wait(15100)
         }
@@ -440,6 +443,9 @@ async function QuerySleepStatus() {
                 console.log(`用户${userIdx+1}睡眠中，已经睡了${sleepHour}小时，可以获得${result.data.sleep_unexchanged_score}金币，上限${result.data.max_coin}金币`)
             }
         } else {
+            if(result.data.history_amount > 0) {
+                await SleepDone(result.data.history_amount)
+            }
             if(curHour >= 23 || curHour < 2) {
                 await SleepStart()
             } else if(curHour >= 20) {
@@ -479,7 +485,7 @@ async function SleepStop() {
 //睡觉收金币
 async function SleepDone(amount) {
     let caller = printCaller()
-    let url = `${hostname}/luckycat/lite/v1/sleep/done_task/?aid=35&update_version_code=85221&device_platform=iphone&&device_type=iPhone13,2`
+    let url = `${hostname}/luckycat/lite/v1/sleep/done_task/?_request_from=web&scm_build_version=1.0.0.1437&session_id=71A9B002-031C-45A3-AFE9-CA3FD3EC89D6&version_code=8.5.2&tma_jssdk_version=2.25.0.11&app_name=news_article_lite&device_id=2392172203611735&channel=App%20Store&resolution=1170*2532&aid=35&ab_version=668907,3485378,3491710,668905,3491678,668906,3491686,668904,3491669,668903,3491704,1859936,668908,3491714,3269751,3472847&ab_feature=794526&review_flag=0&ab_group=794526&subchannel=unknown&update_version_code=85221&cdid=B3B22E05-3B35-45FE-866E-E958D603661C&ac=WIFI&os_version=15.0&ssmix=a&device_platform=iphone&iid=2049946128494047&ab_client=a1,f2,f7,e1&device_type=iPhone13,2`
     let body = `{"score_amount" : ${amount}}`
     let urlObject = populatePostUrl(url,body)
     await httpPost(urlObject,caller)
@@ -487,7 +493,7 @@ async function SleepDone(amount) {
     if(!result) return
     //console.log(result)
     if(result.err_no == 0) {
-        console.log(`用户${userIdx+1}领取睡觉金币奖励成功`)
+        console.log(`用户${userIdx+1}领取睡觉金币奖励${amount}金币成功`)
     } else {
         console.log(`用户${userIdx+1}领取睡觉金币奖励失败：${result.err_tips}`)
     }
