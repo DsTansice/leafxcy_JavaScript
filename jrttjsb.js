@@ -485,7 +485,7 @@ async function SleepStop() {
 //睡觉收金币
 async function SleepDone(amount) {
     let caller = printCaller()
-    let url = `${hostname}/luckycat/lite/v1/sleep/done_task/?_request_from=web&scm_build_version=1.0.0.1437&session_id=71A9B002-031C-45A3-AFE9-CA3FD3EC89D6&version_code=8.5.2&tma_jssdk_version=2.25.0.11&app_name=news_article_lite&device_id=2392172203611735&channel=App%20Store&resolution=1170*2532&aid=35&ab_version=668907,3485378,3491710,668905,3491678,668906,3491686,668904,3491669,668903,3491704,1859936,668908,3491714,3269751,3472847&ab_feature=794526&review_flag=0&ab_group=794526&subchannel=unknown&update_version_code=85221&cdid=B3B22E05-3B35-45FE-866E-E958D603661C&ac=WIFI&os_version=15.0&ssmix=a&device_platform=iphone&iid=2049946128494047&ab_client=a1,f2,f7,e1&device_type=iPhone13,2`
+    let url = `${hostname}/luckycat/lite/v1/sleep/done_task/?aid=35&update_version_code=85221&device_platform=iphone&&device_type=iPhone13,2`
     let body = `{"score_amount" : ${amount}}`
     let urlObject = populatePostUrl(url,body)
     await httpPost(urlObject,caller)
