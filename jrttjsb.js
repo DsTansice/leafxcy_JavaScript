@@ -64,6 +64,8 @@ let adIdList = [26, 181, 186, 187, 188, 189, 190, 195, 210, 214, 216, 225, 308, 
     }
     else
     {
+        await showUpdateMsg()
+        
         if(!(await checkEnv())) {
             return
         }
@@ -76,6 +78,10 @@ let adIdList = [26, 181, 186, 187, 188, 189, 190, 195, 210, 214, 216, 225, 308, 
 })()
 .catch((e) => $.logErr(e))
 .finally(() => $.done())
+
+function showUpdateMsg() {
+    console.log('\n2021.12.14 15:40 更新：默认不做农场和浇水任务，收益太低。可以自定义每次阅读的文章数量，填在变量jrttjsbReadNum里\n')
+}
 
 //通知
 async function showmsg() {
@@ -260,7 +266,7 @@ async function DailyArtsReward() {
     if(!result) return
     //console.log(result)
     if(result.err_no==0) {
-        console.log(`用户${userIdx+1}领取每日阅读奖励获得${result.data.score_amount}金币`)
+        console.log(`用户${userIdx+1}领取每日阅读奖励获得${result.data.score_amount}金币(${result.data.icon_data.done_times}/${result.data.icon_data.read_limit})`)
     } else {
         console.log(`用户${userIdx+1}领取每日阅读奖励失败：${result.err_tips}`)
     }
