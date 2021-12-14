@@ -535,7 +535,7 @@ async function QueryFarmInfo() {
         if(result.data.info.water>=10) {
             await FarmWater()
         }
-        if(result.data.info.box_num==0) {
+        if(result.data.info.box_num>0) {
             await FarmOpenBox()
         }
     } else {
