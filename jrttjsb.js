@@ -50,7 +50,7 @@ let maxReadPerRun = 10
 let readList = []
 
 let validList = []
-let adIdList = [26, 181, 186, 187, 188, 189, 190, 195, 210, 214, 216, 225, 256, 257, 259, 275, 308, 324, 327, 329]
+let adIdList = [26, 181, 186, 187, 188, 189, 190, 195, 210, 214, 216, 225, 308, 324, 327, 329]
         
 ///////////////////////////////////////////////////////////////////
 
@@ -149,14 +149,16 @@ async function RunMultiUser() {
             await DoneEat()
             
             //农场
+            //await EnterFarm()
+            //await $.wait(1500)
             await QueryFarmInfo()
             await QueryFarmLandStatus()
             await QueryFarmSignStatus()
             await QueryFarmTask()
             
             //种树
-            await QueryTreeSignStatus()
             await QueryTreeChallenge()
+            await QueryTreeSignStatus()
             await QueryTreeStatus()
             
             for(let adId of adIdList) await ExcitationAd(adId)
@@ -172,6 +174,7 @@ async function RunMultiUser() {
     for(userIdx=0; userIdx<userHeaderArr.length; userIdx++) {
         if(userStatus[userIdx]==true) await QueryUserInfo(0)
     }
+    
 }
 
 //阅读列表
@@ -434,7 +437,7 @@ async function QuerySleepStatus() {
                 await SleepStop()
             } else if(result.data.sleep_unexchanged_score==result.data.max_coin && curHour >= 7) {
                 let rnd = Math.random()
-                if(rnd>0.95) {
+                if(rnd>0.90) {
                     await SleepStop()
                 } else {
                     console.log(`用户${userIdx+1}随机醒来时间，本次不进行醒来，已经睡了${sleepHour}小时，可以获得${result.data.sleep_unexchanged_score}金币`)
@@ -446,11 +449,11 @@ async function QuerySleepStatus() {
             if(result.data.history_amount > 0) {
                 await SleepDone(result.data.history_amount)
             }
-            if(curHour >= 23 || curHour < 2) {
+            if(curHour >= 22 || curHour < 2) {
                 await SleepStart()
             } else if(curHour >= 20) {
                 let rnd = Math.random()
-                if(rnd>0.95) {
+                if(rnd>0.90) {
                     await SleepStart()
                 } else {
                     console.log(`用户${userIdx+1}随机睡眠时间，本次不进行睡眠`)
@@ -485,7 +488,7 @@ async function SleepStop() {
 //睡觉收金币
 async function SleepDone(amount) {
     let caller = printCaller()
-    let url = `${hostname}/luckycat/lite/v1/sleep/done_task/?aid=35&update_version_code=85221&device_platform=iphone&&device_type=iPhone13,2`
+    let url = `${hostname}/luckycat/lite/v1/sleep/done_task/?_request_from=web&scm_build_version=1.0.0.1437&version_code=8.5.2&tma_jssdk_version=2.25.0.11&app_name=news_article_lite&channel=App%20Store&resolution=1170*2532&aid=35&ab_version=668907,3485378,3491710,668905,3491678,668906,3491686,668904,3491669,668903,3491704,1859936,668908,3491714,3269751,3472847&ab_feature=794526&review_flag=0&ab_group=794526&subchannel=unknown&update_version_code=85221&ac=WIFI&os_version=15.0&ssmix=a&device_platform=iphone&ab_client=a1,f2,f7,e1&device_type=iPhone13,2`
     let body = `{"score_amount" : ${amount}}`
     let urlObject = populatePostUrl(url,body)
     await httpPost(urlObject,caller)
@@ -532,11 +535,27 @@ async function QueryFarmInfo() {
         if(result.data.info.water>=10) {
             await FarmWater()
         }
-        if(result.data.info.box_num>0) {
+        if(result.data.info.box_num==0) {
             await FarmOpenBox()
         }
     } else {
         console.log(`用户${userIdx+1}查询农场状态失败：${result.message}`)
+    }
+}
+
+//进入农场
+async function EnterFarm() {
+    let caller = printCaller()
+    let url = `${hostname}/ttgame/game_farm/home_info?aid=35&update_version_code=85221&device_platform=iphone&&device_type=iPhone13,2`
+    let urlObject = populateGetUrl(url)
+    await httpGet(urlObject,caller)
+    let result = httpResult;
+    if(!result) return
+    console.log(result)
+    if(result.status_code == 0) {
+        
+    } else {
+        console.log(`用户${userIdx+1}进入农场失败：${result.message}`)
     }
 }
 
