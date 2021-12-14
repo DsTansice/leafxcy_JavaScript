@@ -220,6 +220,7 @@ async function ReadArticles() {
         if(userStatus[userIdx]==true) {
             await ReadDouble()
             await DailyArtsReward()
+            await DailyPushReward()
         }
     }
     for(let i=0; i<maxReadPerRun; i++) {
@@ -266,9 +267,27 @@ async function DailyArtsReward() {
     if(!result) return
     //console.log(result)
     if(result.err_no==0) {
-        console.log(`用户${userIdx+1}领取每日阅读奖励获得${result.data.score_amount}金币(${result.data.icon_data.done_times}/${result.data.icon_data.read_limit})`)
+        console.log(`用户${userIdx+1}领取每日阅读奖励获得${result.data.score_amount}金币`)
     } else {
         console.log(`用户${userIdx+1}领取每日阅读奖励失败：${result.err_tips}`)
+    }
+}
+
+//每日推送奖励
+async function DailyPushReward() {
+    let caller = printCaller()
+    let timeInMS = Math.round(new Date().getTime())
+    let rndGroupId = Math.floor(Math.random()*7000000000000000000)
+    let url = `${hostname}/score_task/v1/task/get_read_bonus/?aid=35&update_version_code=85221&os_version=15.0&device_platform=iphone&group_id=${rndGroupId}&impression_type=push`
+    let urlObject = populateGetUrl(url)
+    await httpGet(urlObject,caller)
+    let result = httpResult;
+    if(!result) return
+    //console.log(result)
+    if(result.err_no==0) {
+        console.log(`用户${userIdx+1}领取每日推送奖励获得${result.data.score_amount}金币`)
+    } else {
+        console.log(`用户${userIdx+1}领取每日推送奖励失败：${result.err_tips}`)
     }
 }
 
