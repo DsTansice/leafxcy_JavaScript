@@ -80,7 +80,7 @@ let adIdList = [26, 181, 186, 187, 188, 189, 190, 195, 210, 214, 216, 225, 308, 
 .finally(() => $.done())
 
 function showUpdateMsg() {
-    console.log('\n2021.12.14 15:40 更新：默认不做农场和浇水任务，收益太低。可以自定义每次阅读的文章数量，填在变量jrttjsbReadNum里\n')
+    console.log('\n2021.12.15 9:30 更新：增加推送奖励，修复一个UA的bug，更改默认UA为安卓\n')
 }
 
 //通知
@@ -512,7 +512,7 @@ async function QuerySleepStatus() {
                 await SleepStop()
             } else if(result.data.sleep_unexchanged_score==result.data.max_coin && curHour >= 7) {
                 let rnd = Math.random()
-                if(rnd>0.90) {
+                if(rnd>0.95) {
                     await SleepStop()
                 } else {
                     console.log(`用户${userIdx+1}随机醒来时间，本次不进行醒来，已经睡了${sleepHour}小时，可以获得${result.data.sleep_unexchanged_score}金币`)
@@ -528,7 +528,7 @@ async function QuerySleepStatus() {
                 await SleepStart()
             } else if(curHour >= 20) {
                 let rnd = Math.random()
-                if(rnd>0.90) {
+                if(rnd>0.95) {
                     await SleepStart()
                 } else {
                     console.log(`用户${userIdx+1}随机睡眠时间，本次不进行睡眠`)
@@ -563,8 +563,9 @@ async function SleepStop() {
 //睡觉收金币
 async function SleepDone(amount) {
     let caller = printCaller()
-    let url = `${hostname}/luckycat/lite/v1/sleep/done_task/?_request_from=web&scm_build_version=1.0.0.1437&version_code=8.5.2&tma_jssdk_version=2.25.0.11&app_name=news_article_lite&channel=App%20Store&resolution=1170*2532&aid=35&ab_version=668907,3485378,3491710,668905,3491678,668906,3491686,668904,3491669,668903,3491704,1859936,668908,3491714,3269751,3472847&ab_feature=794526&review_flag=0&ab_group=794526&subchannel=unknown&update_version_code=85221&ac=WIFI&os_version=15.0&ssmix=a&device_platform=iphone&ab_client=a1,f2,f7,e1&device_type=iPhone13,2`
-    let body = `{"score_amount" : ${amount}}`
+    let timeInMS = Math.round(new Date().getTime())
+    let url = `${hostname}/luckycat/lite/v1/sleep/done_task/?os_api=25&device_type=VOG-AL10&ssmix=a&manifest_version_code=8280&dpi=240&abflag=3&pass_through=default&use_ecpm=0&rom_version=25&rit=coin&app_name=news_article_lite&ab_client=a1%2Ce1%2Cf2%2Cg2%2Cf7&version_name=8.2.8&ab_version=668903%2C3491704%2C1859936%2C668908%2C3491714%2C668907%2C3491710%2C668905%2C3491678%2C668906%2C3491686%2C668904%2C3491669%2C3269751%2C3472846%2C3493942&plugin_state=7731332411413&sa_enable=0&ac=wifi&_request_from=web&update_version_code=82809&channel=lite2_tengxun&_rticket=${timeInMS}&status_bar_height=24&dq_param=0&device_platform=android&iid=1592553870724568&scm_build_version=1.0.0.1454&mac_address=88%3AB1%3A11%3A61%3A96%3A7B&version_code=828&polaris_version=1.0.5&tma_jssdk_version=1.95.0.28&is_pad=1&resolution=720*1280&os_version=7.1.2&language=zh&device_brand=HUAWEI&aid=35&ab_feature=z1&luckycat_version_name=4.2.0-rc.5&luckycat_version_code=420005`
+    let body = `{"score_amount":${amount},"enable_preload_exciting_video":0}`
     let urlObject = populatePostUrl(url,body)
     await httpPost(urlObject,caller)
     let result = httpResult;
@@ -1171,7 +1172,7 @@ function populatePostUrl(url,reqBody=''){
             'passport-sdk-version' : '30',
             'sdk-version' : '2',
             'x-vc-bdturing-sdk-version' : '2.0.0',
-            'User-Agent' : userAgent[userIdx%UAcount],
+            'User-Agent' : userAgentArr[userIdx%UAcount],
             'Cookie' : userHeaderArr[userIdx],
             'X-Khronos' : timeInSecond,
             'Content-Type' : 'application/json; charset=utf-8',
@@ -1194,7 +1195,7 @@ function populateGetUrl(url){
             'passport-sdk-version' : '30',
             'sdk-version' : '2',
             'x-vc-bdturing-sdk-version' : '2.0.0',
-            'User-Agent' : userAgent[userIdx%UAcount],
+            'User-Agent' : userAgentArr[userIdx%UAcount],
             'Cookie' : userHeaderArr[userIdx],
             'X-Khronos' : timeInSecond,
             'Content-Type' : 'application/json; charset=utf-8',
