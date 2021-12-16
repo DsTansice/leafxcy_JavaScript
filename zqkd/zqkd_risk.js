@@ -138,6 +138,7 @@ async function GetOrderList() {
 		notifyStr += `账户${userIdx+1} ${nickname[userIdx]}: \n`
         for(let item of result.data) {
             let withdrawStr = ''
+            let withType = (item.type==2) ? '微信' : '支付宝'
             let desc = (item.description) ? item.description : '无'
             if (item.status == 0){
                 withdrawStr = '未入账';
@@ -146,7 +147,7 @@ async function GetOrderList() {
             } else if (item.status == 2){
                 withdrawStr = '提现失败';
             }	
-            notifyStr += `提现信息：${item.add_time_str} 提现${item.money}元，${withdrawStr}，风险信息：${desc}\n`		
+            notifyStr += `${item.add_time_str} ${withType}提现${item.money}元，${withdrawStr}，风险信息：${desc}\n`		
         }
     } else {
         console.log(`账户${userIdx+1}查询风险信息失败`)
