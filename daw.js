@@ -18,7 +18,7 @@ export dawToken='account1@account2@account3'
 V2P重写：打开APP即可获取CK，没有的话点一下下面分红币页面，可以直接捉多账号
 [task_local]
 #都爱玩
-15 0,1,8,15,20 * * * https://raw.githubusercontent.com/leafxcy/JavaScript/main/daw.js, tag=都爱玩, enabled=true
+3 1,20 * * * https://raw.githubusercontent.com/leafxcy/JavaScript/main/daw.js, tag=都爱玩, enabled=true
 [rewrite_local]
 https://v3.sdk.haowusong.com/api/box/wallet/info url script-request-header https://raw.githubusercontent.com/leafxcy/JavaScript/main/daw.js
 [MITM]
