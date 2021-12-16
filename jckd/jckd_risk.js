@@ -1,12 +1,12 @@
 /*
-安卓：中青看点 风险查询+今日收益详情
+安卓：晶彩看点 风险查询+今日收益详情
 
-需要用到zqkdCookie，只测试了青龙，理论上V2P也能用
-本脚本没有设置重写，请自己复制zq_cookie到青龙环境下使用，多账号用@隔开
-例子： export zqkdCookie='uid=xxx&zqkey=yyy&zqkey_id=zzz@uid=aaa&zqkey=bbb&zqkey_id=ccc@uid=qqq&zqkey=sss&zqkey_id=ttt'
+需要用到jckdCookie，只测试了青龙，理论上V2P也能用
+本脚本没有设置重写，请自己复制jc_cookie到青龙环境下使用，多账号用@隔开
+例子： export jckdCookie='uid=xxx&zqkey=yyy&zqkey_id=zzz@uid=aaa&zqkey=bbb&zqkey_id=ccc@uid=qqq&zqkey=sss&zqkey_id=ttt'
 */
 
-const jsname = '中青看点风险查询'
+const jsname = '晶彩看点风险查询'
 const $ = Env(jsname)
 const notifyFlag = 1; //0为关闭通知，1为打开通知,默认为1
 const logDebug = 0
@@ -17,7 +17,7 @@ let notifyStr = ''
 let rndtime = "" //毫秒
 let httpResult //global buffer
 
-let userCookie = ($.isNode() ? process.env.zqkdCookie : $.getdata('zqkdCookie')) || '';
+let userCookie = ($.isNode() ? process.env.jckdCookie : $.getdata('jckdCookie')) || '';
 let userCookieArr = []
 
 let nickname = []
@@ -109,7 +109,7 @@ function replaceCookie(userCookieItem) {
         uid = userCookieItem.match(/uid=([\w-]+)/)[1]
     }
     
-    replaceItem = `uid=${uid}&version_code=63&zqkey=${zqkey}&zqkey_id=${zqkey_id}`
+    replaceItem = `uid=${uid}&version_code=812&zqkey=${zqkey}&zqkey_id=${zqkey_id}`
     
     return replaceItem
 }
@@ -127,9 +127,9 @@ async function GetOrderList() {
     let rndtime = Math.floor(new Date().getTime())
     let reqCk = userCookieArr[userIdx].replace(/zqkey/g,'cookie')
     let body = 'status=all&' + reqCk
-    let url = 'https://kandian.youth.cn/withdraw/getOrderList?_=' + rndtime
+    let url = 'https://ant.xunsl.com/withdraw/getOrderList?_=' + rndtime
     let urlObject = populatePostUrl(url,body)
-    urlObject.headers.Host = 'kandian.youth.cn'
+    urlObject.headers.Host = 'ant.xunsl.com'
     await httpPost(urlObject,caller)
     let result = httpResult;
     if(!result) return
@@ -158,7 +158,7 @@ async function getUserInfo() {
     let caller = printCaller()
     let tmpCk = userCookieArr[userIdx]
     tmpCk = tmpCk.replace(/zqkey/g,'cookie')
-    let url = 'https://kandian.wkandian.com/v17/NewTask/getSign.json?' + userCookieArr[userIdx]
+    let url = 'https://ant.xunsl.com/v17/NewTask/getSign.json?' + userCookieArr[userIdx]
     let urlObject = populateGetUrl(url)
     await httpGet(urlObject,caller)
     let result = httpResult;
@@ -183,7 +183,7 @@ async function getBalance() {
     let caller = printCaller()
     let tmpCk = userCookieArr[userIdx]
     tmpCk = tmpCk.replace(/zqkey/g,'cookie')
-    let url = 'https://kandian.wkandian.com/wap/user/balance?' + tmpCk
+    let url = 'https://ant.xunsl.com/wap/user/balance?' + tmpCk
     let urlObject = populateGetUrl(url)
     await httpGet(urlObject,caller)
     let result = httpResult;
@@ -216,7 +216,7 @@ function populatePostUrl(url,reqBody){
         url: url,
         headers: {
             'request_time' : rndtime,
-            'Host' : 'kandian.wkandian.com',
+            'Host' : 'ant.xunsl.com',
             'device-model' : 'VOG-AL10',
             'device-platform' : 'android',
             'Connection' : 'keep-alive',
@@ -232,7 +232,7 @@ function populateGetUrl(url){
         url: url,
         headers: {
             'request_time' : rndtime,
-            'Host' : 'kandian.wkandian.com',
+            'Host' : 'ant.xunsl.com',
             'device-model' : 'VOG-AL10',
             'device-platform' : 'android',
             'Connection' : 'keep-alive',
