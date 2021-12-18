@@ -1,10 +1,12 @@
 /*
-IOS：阅多多/悦看点
-理论上可以直接跑两个APP的账号，每天金币7毛以上，提现1元和5元需要做任务拿提现券
-阅多多下载注册地址：https://yuekandian.yichengw.cn/download?app=3&referrer=729879
+IOS：看点宝/阅多多/悦看点
+三个APP分别捉包，可以共用一个脚本跑任务
+比较容易黑，不要跑太频繁，每天11次就可以领完任务奖励
+每天金币7毛以上，提现1元和5元需要做任务拿提现券
+看点宝下载注册地址：https://yuekandian.yichengw.cn/download?app=5&referrer=764084
 
-默认不提现1块，可以在环境变量yddSkipWithdraw设置不想提现的金额，逗号隔开，填0就会尝试提现所有金额
-export yddSkipWithdraw='1,5'
+可以在环境变量yddSkipWithdraw设置不想提现的金额，逗号隔开，填0就会尝试提现所有金额
+export yddSkipWithdraw='1'
 
 青龙：
 捉取 https://yuekandian.yichengw.cn/api/v1/member/profile 的包里的Authorization(把前面的Bearer删掉)，device和User-Agent，按顺序用#连起来写到yddCookie里，多账户用@隔开
@@ -12,8 +14,8 @@ export yddCookie='账号1的Authorization#device#UA@账号2的Authorization#devi
 
 V2P重写：打开APP即可获取CK，没有的话点一下我的页面或者赚钱页面
 [task_local]
-#阅多多
-0-59/15 8-23 * * * https://raw.githubusercontent.com/leafxcy/JavaScript/main/ydd.js, tag=阅多多, enabled=true
+#看点宝/阅多多/悦看点
+15 9-21 * * * https://raw.githubusercontent.com/leafxcy/JavaScript/main/ydd.js, tag=看点宝/阅多多/悦看点, enabled=true
 [rewrite_local]
 https://yuekandian.yichengw.cn/api/v1/member/profile url script-request-header https://raw.githubusercontent.com/leafxcy/JavaScript/main/ydd.js
 [MITM]
@@ -41,7 +43,7 @@ let userDevice = []
 let userAgent = []
 let userCookie = []
 
-let yddSkipWithdraw = ($.isNode() ? process.env.yddSkipWithdraw : $.getdata('yddSkipWithdraw')) || '1';
+let yddSkipWithdraw = ($.isNode() ? process.env.yddSkipWithdraw : $.getdata('yddSkipWithdraw')) || '0';
 let skipWithdraw = []
 
 let userIdx = 0
@@ -64,7 +66,7 @@ let barrierFlag = []
 let doneTaskList = []
 let doneTaskTicket = []
 
-let NUM_PER_ROUND = 1
+let NUM_PER_ROUND = 2
 
 let LOTTERY_TYPE = 1
 let AD_TICKET_TYPE = 5
@@ -284,31 +286,6 @@ async function RunMultiUser() {
         }
         await $.wait(100)
     }
-    
-    //============= 助力领现金 =============
-    console.log('\n准备看助力领现金视频...')
-    for(userIdx=0; userIdx<yddCookieArr.length; userIdx++) {
-        await HelpClick()
-        if(helpTicket[userIdx]) needHelpVideo=1
-    }
-    await $.wait(100)
-    
-    if(needHelpVideo > 0) {
-        for(userIdx=0; userIdx<yddCookieArr.length; userIdx++) {
-            if(helpTicket[userIdx]) await WatchAd(HELP_TYPE)
-        }
-        await $.wait(100)
-        for(userIdx=0; userIdx<yddCookieArr.length; userIdx++) {
-            if(helpTicket[userIdx]) await LogAd(AD_TICKET_TYPE,helpTicket[userIdx])
-        }
-        await $.wait(100)
-    }
-    
-    console.log('\n查询助力领现金状态...')
-    for(userIdx=0; userIdx<yddCookieArr.length; userIdx++) {
-        await HelpInfo()
-    }
-    await $.wait(100)
     
     //============= 闯关换手机 =============
     console.log('\n查询闯关状态...')
@@ -833,7 +810,8 @@ async function QueryWithdrawList() {
             }
             if(skipFlag==1) continue
             if(userInfo[userIdx].point>item.jinbi && userInfo[userIdx].ticket>item.cond && item.is_ok==1) {
-                await Withdraw(item.jine)
+                console.log(`用户${userIdx+1}准备提现${item.jine}元`)
+                //await Withdraw(item.jine)
                 if(withdrawFlag[userIdx]==1) break;
             }
         }
@@ -1012,6 +990,9 @@ function populatePostUrl(url,reqBody=''){
     if(userAgent[userIdx].indexOf('CBD') > -1) {
         urlObject.headers['version'] = '2'
         urlObject.headers['app'] = '3'
+    } else if(userAgent[userIdx].indexOf('KDB') > -1) {
+        urlObject.headers['version'] = '1'
+        urlObject.headers['app'] = '5'
     }
     return urlObject;
 }
@@ -1036,6 +1017,9 @@ function populateGetUrl(url){
     if(userAgent[userIdx].indexOf('CBD') > -1) {
         urlObject.headers['version'] = '2'
         urlObject.headers['app'] = '3'
+    } else if(userAgent[userIdx].indexOf('KDB') > -1) {
+        urlObject.headers['version'] = '1'
+        urlObject.headers['app'] = '5'
     }
     return urlObject;
 }
