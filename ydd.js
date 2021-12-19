@@ -802,16 +802,19 @@ async function QueryWithdrawList() {
             let skipFlag = 0
             if(skipWithdraw.length>0) {
                 for(let skipItem of skipWithdraw) {
-                    if(parseInt(item.jine) == parseInt(skipItem)) {
+                    if(item.jine == skipItem) {
                         skipFlag = 1
                         break
                     }
                 }
             }
-            if(skipFlag==1) continue
-            if(userInfo[userIdx].point>item.jinbi && userInfo[userIdx].ticket>item.cond && item.is_ok==1) {
+            if(skipFlag==1) {
+                console.log(`用户${userIdx+1}跳过提现${item.jine}元`)
+                continue
+            }
+            if(userInfo[userIdx].point>=item.jinbi && userInfo[userIdx].ticket>=item.cond && item.is_ok==1) {
                 console.log(`用户${userIdx+1}准备提现${item.jine}元`)
-                //await Withdraw(item.jine)
+                await Withdraw(item.jine)
                 if(withdrawFlag[userIdx]==1) break;
             }
         }
