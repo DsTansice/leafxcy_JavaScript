@@ -3,7 +3,9 @@
 
 本脚本会找出账号ck并检查账号状态是否黑号，默认不执行注销
 把需要检查的账号按照 手机号#密码 的格式，填到zqkdAccount里，多账号用@隔开
+或者把账号CK填进zqkdBlackCookie里，多账号用@隔开
 例子：export zqkdAccount='110#123456@120#654321'
+export zqkdBlackCookie='uid=xxxx&zqkey=yyyyy&zqkey_id=zzzzzz'
 ！！！谨慎操作：如果需要注销，请把环境变量zqkdCancel设为1！！！
 */
 
