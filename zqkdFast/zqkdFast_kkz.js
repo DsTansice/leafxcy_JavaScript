@@ -2,39 +2,35 @@
 安卓：中青看点极速版
 注册链接：https://user.youth.cn/h5/fastAppWeb/invite/invite_ground.html?share_uid=1037638361&channel=c8000&nickname=%E6%AF%8D%E8%80%81%E8%99%8E%E5%A5%B6%E8%8C%B6&avatar=http%3A%2F%2Fres.youth.cn%2Favatar_202201_04_04r_61d4470b744c11037637302y.jpg&v=1641305085
 
-本脚本负责阅读文章，只需要ck即可
-定时自己看着改吧，我也不知道一天几次能跑满阅读收益，可能十来次吧
+本脚本负责看看赚，目前有bug，只需要捉一个看看赚就可以刷满收益
+所以定时暂时一天一次就可
+35 10 * * *
 
 青龙：
-捉包找uid=xxxx&token=xxxxx&token_id=xxxxx，填到变量zqkdFastCookie里，多账号用@连接
+捉包找uid=xxxx&token=xxxxx&token_id=xxxxx，填到变量zqkdFastKkzBody里，多账号用@连接
 
-V2P/圈X 重写：
-[task_local]
-#中青极速版文章
-25 8-22 * * * https://raw.githubusercontent.com/leafxcy/JavaScript/main/zqkdFast/zqkdFast_read.js, tag=中青极速版文章, enabled=true
+V2P 重写：
 [rewrite_local]
-https://user.youth.cn/FastApi/NewTaskSimple/getTaskList url script-request-header https://raw.githubusercontent.com/leafxcy/JavaScript/main/zqkdFast/zqkdFast_read.js
+https://user.youth.cn/v1/Nameless/adlickstart  https://raw.githubusercontent.com/leafxcy/JavaScript/main/zqkdFast/zqkdFast_kkz.js
 [MITM]
-hostname = user.youth.cn
+user.youth.cn
 */
 
-const jsname = '中青极速版文章'
+const jsname = '中青极速版看看赚'
 const $ = Env(jsname)
 const logDebug = 0
 
-const updateStr = '2022.01.04 22:00 中青安卓极速版 阅读文章 初版'
+const updateStr = '2022.01.04 22:00 中青安卓极速版 看看赚 初版'
 
 let rndtime = "" //毫秒
 let httpResult //global buffer
 
-let userCookie = ($.isNode() ? process.env.zqkdFastCookie : $.getdata('zqkdFastCookie')) || '';
-let userCookieArr = []
+let userBody = ($.isNode() ? process.env.zqkdFastKkzBody : $.getdata('zqkdFastKkzBody')) || '';
+let userBodyArr = []
 
 let userIdx = 0
 let userCount = 0
-let userReadList = []
-
-let maxReadNum = 0
+let stopFlag = 0
 
 ///////////////////////////////////////////////////////////////////
 
@@ -47,18 +43,18 @@ let maxReadNum = 0
         if(!(await checkEnv())) return
         
         for(userIdx=0; userIdx < userCount; userIdx++) {
-            await ListArts(userIdx)
-        }
-        
-        for(let i=0; i<maxReadNum; i++) {
-            console.log(`\n第${i+1}轮阅读`)
-            for(userIdx=0; userIdx < userCount; userIdx++) {
-                if(i<userReadList[userIdx].length) {
-                    CompleteArts(userIdx,i)
-                    await $.wait(200)
-                }
+            console.log('======================')
+            await adlickstart(userIdx)
+            await $.wait(500)
+            for(let i=0; i<6; i++) {
+                await bannerstatus(userIdx)
+                await $.wait(500)
             }
-            await $.wait(5000)
+            stopFlag = 0
+            while(stopFlag==0) {
+                await adlickend(userIdx)
+                await $.wait(2000)
+            }
         }
     }
 })()
@@ -67,80 +63,101 @@ let maxReadNum = 0
 
 ///////////////////////////////////////////////////////////////////
 async function checkEnv() {
-    if(userCookie) {
-        userCookieArr = userCookie.split('@')
-        userCount = userCookieArr.length
+    if(userBody) {
+        userBodyArr = userBody.split('@')
+        userCount = userBodyArr.length
     } else {
-        console.log('未找到zqkdFastCookie')
+        console.log('未找到zqkdFastKkzBody')
         return false
     }
     
-    for(let idx in userCookieArr) userReadList.push([])
-    
-    console.log(`共找到${userCount}个CK`)
+    console.log(`共找到${userCount}个看看赚账户`)
     return true
 }
 
 async function GetRewrite() {
-    if($request.url.indexOf('FastApi/NewTaskSimple/getTaskList') > -1) {
-        console.log($request.url)
-        let uid = $request.url.match(/uid=(\w+)/)[1]
-        let token = $request.url.match(/token=([\w\%]+)/)[1]
-        let token_id = $request.url.match(/token_id=(\w+)/)[1]
-        let ck = `uid=${uid}&token=${token}&token_id=${token_id}`
+    if($request.url.indexOf('Nameless') > -1 && $request.url.indexOf('adlickstart') > -1) {
+        let body = $request.body
+        let uid = body.match(/uid=(\w+)/)[1]
         let uidStr = 'uid='+uid
         
-        if(userCookie) {
-            if(userCookie.indexOf(uidStr) == -1) {
-                userCookie = userCookie + '@' + ck
-                $.setdata(userCookie, 'zqkdFastCookie');
-                ckList = userCookie.split('@')
-                $.msg(jsname+` 获取第${ckList.length}个zqkdFastCookie成功: ${ck}`)
+        if(userBody) {
+            if(userBody.indexOf(uidStr) == -1) {
+                userBody = userBody + '@' + body
+                $.setdata(userBody, 'zqkdFastKkzBody');
+                ckList = userBody.split('@')
+                $.msg(jsname+` 获取第${ckList.length}个zqkdFastKkzBody成功: ${body}`)
             } else {
-                console.log(jsname+` 找到重复的cookie: ${ck}`)
+                userBodyArr = userBody.split('@')
+                for(let i=0; i<userBodyArr.length; i++) {
+                    if(userBodyArr[i].indexOf(uidStr) > -1) {
+                        userBodyArr[i] = body
+                        break;
+                    }
+                }
+                userBody = userBodyArr.join('@')
+                $.setdata(userBody, 'zqkdFastKkzBody');
+                $.msg(jsname+` 找到重复的用户body: ${body}，将替换旧body`)
             }
         } else {
-            $.setdata(ck, 'zqkdFastCookie');
-            $.msg(jsname+` 获取第1个zqkdFastCookie成功: ${ck}`)
+            $.setdata(body, 'zqkdFastKkzBody');
+            $.msg(jsname+` 获取第1个zqkdFastKkzBody成功: ${body}`)
         }
     }
 }
 ///////////////////////////////////////////////////////////////////
-async function ListArts(userIdx) {
+async function adlickstart(idx) {
     let caller = printCaller()
-    let userCk = userCookieArr[userIdx]
-    let url = `https://user.youth.cn/FastApi/article/lists.json?catid=0&video_catid=1453&op=0&behot_time=0&&app_version=2.5.5&${userCk}`
-    let urlObject = populateGetUrl(url)
-    await httpGet(urlObject,caller)
+    let body = userBodyArr[userIdx]
+    let url = 'https://user.youth.cn/v1/Nameless/adlickstart.json'
+    let urlObject = populatePostUrl(url,body)
+    await httpPost(urlObject,caller)
     let result = httpResult;
     if(!result) return
     
     if(result.error_code == 0) {
-        for(let item of result.items) {
-            userReadList[userIdx].push(item.signature)
-        }
-        maxReadNum = getMax(maxReadNum,userReadList[userIdx].length)
-        console.log(`用户${userIdx+1}找到${userReadList[userIdx].length}篇文章`)
+        console.log(`用户${idx+1}开始看看赚任务[${result.items.banner_id}]`)
     } else {
-        console.log(`${result.message}`)
+        console.log(`用户${idx+1}开始看看赚任务失败：${result.message}`)
     }
 }
 
-async function CompleteArts(uIdx,signIdx) {
+async function bannerstatus(idx) {
     let caller = printCaller()
-    let sign = userReadList[userIdx][signIdx]
-    let url = `https://user.youth.cn/FastApi/article/complete.json?signature=${sign}`
-    let urlObject = populateGetUrl(url)
-    await httpGet(urlObject,caller)
+    let body = userBodyArr[userIdx]
+    let url = 'https://user.youth.cn/v1/Nameless/bannerstatus.json'
+    let urlObject = populatePostUrl(url,body)
+    await httpPost(urlObject,caller)
     let result = httpResult;
     if(!result) return
     
     if(result.error_code == 0) {
-        console.log(`用户${uIdx+1}[${result.items.uid}]阅读文章获得${result.items.read_score}青豆`)
+        console.log(`用户${idx+1}阅读看看赚文章中[${result.items.banner_id}]`)
     } else {
-        console.log(`${result.message}`)
+        console.log(`用户${idx+1}阅读看看赚文章失败：${result.message}`)
     }
 }
+
+async function adlickend(idx) {
+    let caller = printCaller()
+    let body = userBodyArr[userIdx]
+    let url = 'https://user.youth.cn/v1/Nameless/adlickend.json'
+    let urlObject = populatePostUrl(url,body)
+    await httpPost(urlObject,caller)
+    let result = httpResult;
+    if(!result) return
+    
+    if(result.error_code == 0) {
+        console.log(`用户${idx+1}获得${result.items.score}青豆`)
+        if(result.items.score==0) {
+            stopFlag = 1
+        }
+    } else {
+        console.log(`用户${idx+1}完成看看赚任务失败：${result.message}`)
+        stopFlag = 1
+    }
+}
+
 ////////////////////////////////////////////////////////////////////
 function populatePostUrl(url,reqBody){
     let urlObject = {
