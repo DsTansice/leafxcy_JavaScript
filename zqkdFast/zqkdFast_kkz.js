@@ -9,7 +9,7 @@
 35 10 * * *
 
 青龙：
-捉包找uid=xxxx&token=xxxxx&token_id=xxxxx，填到变量zqkdFastKkzBody里，多账号用@连接
+捉包找adlickstart的url，把body填到zqkdFastKkzBody里，多账号用@隔开
 
 V2P 重写：
 [rewrite_local]
