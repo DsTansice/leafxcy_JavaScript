@@ -1,6 +1,8 @@
 /*
-安卓：中青看点极速版
-注册链接：https://user.youth.cn/h5/fastAppWeb/invite/invite_ground.html?share_uid=1037638361&channel=c8000&nickname=%E6%AF%8D%E8%80%81%E8%99%8E%E5%A5%B6%E8%8C%B6&avatar=http%3A%2F%2Fres.youth.cn%2Favatar_202201_04_04r_61d4470b744c11037637302y.jpg&v=1641305085
+安卓：中青看点极速版 （快应用，非IOS极速版，跟普通版青豆数据独立，普通版黑了也可以用）
+邀请链接：https://user.youth.cn/h5/fastAppWeb/invite/invite_ground.html?share_uid=1037637302&channel=c8000&nickname=%E5%B0%8F%E8%84%91%E6%96%A7%E8%9B%8B%E8%9B%8B&avatar=http%3A%2F%2Fres.youth.cn%2Favatar_202201_04_04q_61d41c92e21131037637302n.jpg&v=1641312406
+
+支持快应用的安卓手机才能玩
 
 本脚本负责看看赚，目前有bug，只需要捉一个看看赚就可以刷满收益
 所以定时暂时一天一次就可

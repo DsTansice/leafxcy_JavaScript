@@ -1,21 +1,22 @@
 /*
-安卓：中青看点极速版
-注册链接：https://user.youth.cn/h5/fastAppWeb/invite/invite_ground.html?share_uid=1037638361&channel=c8000&nickname=%E6%AF%8D%E8%80%81%E8%99%8E%E5%A5%B6%E8%8C%B6&avatar=http%3A%2F%2Fres.youth.cn%2Favatar_202201_04_04r_61d4470b744c11037637302y.jpg&v=1641305085
+安卓：中青看点极速版 （快应用，非IOS极速版，跟普通版青豆数据独立，普通版黑了也可以用）
+邀请链接：https://user.youth.cn/h5/fastAppWeb/invite/invite_ground.html?share_uid=1037638361&channel=c8000&nickname=%E6%AF%8D%E8%80%81%E8%99%8E%E5%A5%B6%E8%8C%B6&avatar=http%3A%2F%2Fres.youth.cn%2Favatar_202201_04_04r_61d4470b744c11037637302y.jpg&v=1641305085
+
+支持快应用的安卓手机才能玩
+别再问圈X了，改了改了改了，没有圈X，你要捉了包自己放到圈X跑也不是不行
 
 本脚本负责阅读文章，只需要ck即可
 定时自己看着改吧，我也不知道一天几次能跑满阅读收益，可能十来次吧
+25 8-22 * * *
 
 青龙：
 捉包找uid=xxxx&token=xxxxx&token_id=xxxxx，填到变量zqkdFastCookie里，多账号用@连接
 
-V2P/圈X 重写：
-[task_local]
-#中青极速版文章
-25 8-22 * * * https://raw.githubusercontent.com/leafxcy/JavaScript/main/zqkdFast/zqkdFast_read.js, tag=中青极速版文章, enabled=true
+V2P 重写：
 [rewrite_local]
-https://user.youth.cn/FastApi/NewTaskSimple/getTaskList url script-request-header https://raw.githubusercontent.com/leafxcy/JavaScript/main/zqkdFast/zqkdFast_read.js
+https://user.youth.cn/FastApi/NewTaskSimple/getTaskList  https://raw.githubusercontent.com/leafxcy/JavaScript/main/zqkdFast/zqkdFast_read.js
 [MITM]
-hostname = user.youth.cn
+user.youth.cn
 */
 
 const jsname = '中青极速版文章'
