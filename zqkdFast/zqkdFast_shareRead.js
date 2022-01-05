@@ -14,7 +14,7 @@ const jsname = '中青极速版分享阅读'
 const $ = Env(jsname)
 const logDebug = 0
 
-const updateStr = '2022.01.05 10:50 中青安卓极速版 分享阅读 初版'
+const updateStr = '2022.01.05 11:18 增加延迟'
 
 let rndtime = "" //毫秒
 let httpResult //global buffer
@@ -49,7 +49,7 @@ let si = ''
                 let readCount = 0
                 for(let i=0; i<zqkdFastShareNum; i++) {
                     readCount++
-                    let randomTime = Math.floor(Math.random()*3*1000) + 3*1000
+                    let randomTime = Math.floor(Math.random()*30*1000) + 3*1000
                     si = randomString(32)
                     console.log(`--随机延迟${Math.floor(randomTime/1000)}秒后开始模拟第${readCount}次分享阅读`)
                     await $.wait(randomTime)

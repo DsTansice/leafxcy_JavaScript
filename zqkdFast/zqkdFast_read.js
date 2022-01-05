@@ -23,7 +23,7 @@ const jsname = '中青极速版文章'
 const $ = Env(jsname)
 const logDebug = 0
 
-const updateStr = '2022.01.04 22:00 中青安卓极速版 阅读文章 初版'
+const updateStr = '2022.01.05 11:17 增加延迟'
 
 let rndtime = "" //毫秒
 let httpResult //global buffer
@@ -59,7 +59,7 @@ let maxReadNum = 0
                     await $.wait(200)
                 }
             }
-            await $.wait(5000)
+            await $.wait(Math.floor(Math.random()*5000) + 30000)
         }
     }
 })()
