@@ -1,38 +1,65 @@
 /*
 安卓：中青看点极速版 （快应用，非IOS极速版，跟普通版青豆数据独立，普通版黑了也可以用）
-邀请链接：https://user.youth.cn/h5/fastAppWeb/invite/invite_ground.html?share_uid=1037637302&channel=c8000&nickname=%E5%B0%8F%E8%84%91%E6%96%A7%E8%9B%8B%E8%9B%8B&avatar=http%3A%2F%2Fres.youth.cn%2Favatar_202201_04_04q_61d41c92e21131037637302n.jpg&v=1641312406
+邀请链接：https://user.youth.cn/h5/fastAppWeb/invite/invite_ground.html?share_uid=1037640800&channel=c8000&nickname=%E5%A4%9A%E5%A4%9A%E7%8B%97&avatar=http%3A%2F%2Fres.youth.cn%2Favatar_202201_05_05x_61d4fc932c6361037637302w.jpg&v=1641351700
 
 支持快应用的安卓手机才能玩
+本脚本负责签到，领取每日任务奖励，和查询账户余额
+需要捉签到和奖励body，分别存在zqkdFastSignBody和zqkdFastRewardBody
+基本上能够看到的任务奖励，包括转发奖励，时段奖励，都可以捉
+定时一天一次就行
+10 22 * * *
 
-本脚本负责看看赚，目前有bug，只需要捉一个看看赚就可以刷满收益
-所以定时暂时一天一次就可
-35 10 * * *
-
-青龙：
-捉包找adlickstart的url，把body填到zqkdFastKkzBody里，多账号用@隔开
-
-V2P 重写：
+V2P：
 [rewrite_local]
-https://user.youth.cn/v1/Nameless/adlickstart  https://raw.githubusercontent.com/leafxcy/JavaScript/main/zqkdFast/zqkdFast_kkz.js
+#签到重写
+https://user.youth.cn/FastApi/Task/sign  https://raw.githubusercontent.com/leafxcy/JavaScript/main/zqkdFast/zqkdFast_reward.js
+#奖励重写
+https://user.youth.cn/FastApi/CommonReward/toGetReward  https://raw.githubusercontent.com/leafxcy/JavaScript/main/zqkdFast/zqkdFast_reward.js
 [MITM]
 user.youth.cn
 */
 
-const jsname = '中青极速版看看赚'
+const jsname = '中青极速版每日奖励'
 const $ = Env(jsname)
 const logDebug = 0
 
-const updateStr = '2022.01.04 22:00 中青安卓极速版 看看赚 初版'
+const updateStr = '2022.01.05 20:45 中青极速版 每日奖励 初版'
 
 let rndtime = "" //毫秒
 let httpResult //global buffer
 
-let userBody = ($.isNode() ? process.env.zqkdFastKkzBody : $.getdata('zqkdFastKkzBody')) || '';
-let userBodyArr = []
+let userCookie = ($.isNode() ? process.env.zqkdFastCookie : $.getdata('zqkdFastCookie')) || '';
+let userCookieArr = []
+
+let rewardBody = ($.isNode() ? process.env.zqkdFastRewardBody : $.getdata('zqkdFastRewardBody')) || '';
+let rewardBodyArr = []
+
+let signBody = ($.isNode() ? process.env.zqkdFastSignBody : $.getdata('zqkdFastSignBody')) || '';
+let signBodyArr = []
 
 let userIdx = 0
 let userCount = 0
-let stopFlag = 0
+
+let actionList = {
+    'pull_live_app' : '打开APP',
+    'share_reward' : '分享1篇文章',
+    'time_reward' : '时段奖励',
+    'extra_invite_rewards' : '额外分享奖励',
+    'new_fresh_open_desktop' : '启动极速版',
+    'read_article_twenty' : '阅读5篇文章',
+    'share_three_article' : '分享3篇内容',
+    'read_thirty_minute' : '阅读10分钟',
+    'read_two_minute' : '阅读2分钟',
+    'read_twenty_minute' : '阅读20分钟',
+    'invite_one_friends' : '进行1次分享',
+    'box_zero' : '定时宝箱',
+    'box_one' : '宝箱1号',
+    'box_three' : '宝箱2号',
+    'box_five' : '宝箱3号',
+    'beread_extra_reward_one' : '清晨分享',
+    'beread_extra_reward_two' : '午间分享',
+    'beread_extra_reward_three' : '晚间分享',
+}
 
 ///////////////////////////////////////////////////////////////////
 
@@ -44,18 +71,26 @@ let stopFlag = 0
         
         if(!(await checkEnv())) return
         
-        for(userIdx=0; userIdx < userCount; userIdx++) {
-            console.log('======================')
-            await adlickstart(userIdx)
-            await $.wait(500)
-            for(let i=0; i<6; i++) {
-                await bannerstatus(userIdx)
+        if(signBodyArr.length>0) {
+            console.log('\n开始签到')
+            for(let userSignBody of signBodyArr) {
+                await Sign(userSignBody)
                 await $.wait(500)
             }
-            stopFlag = 0
-            while(stopFlag==0) {
-                await adlickend(userIdx)
-                await $.wait(2000)
+        }
+        
+        if(rewardBodyArr.length>0) {
+            console.log('\n开始领取任务奖励')
+            for(let userRewardBody of rewardBodyArr) {
+                await ToGetReward(userRewardBody)
+                await $.wait(500)
+            }
+        }
+        
+        if(userCookieArr.length>0) {
+            console.log('\n开始查询账户')
+            for(userIdx=0; userIdx < userCount; userIdx++) {
+                await GetCoinInfo(userIdx)
             }
         }
     }
@@ -65,104 +100,144 @@ let stopFlag = 0
 
 ///////////////////////////////////////////////////////////////////
 async function checkEnv() {
-    if(userBody) {
-        userBodyArr = userBody.split('@')
-        userCount = userBodyArr.length
+    if(userCookie) {
+        userCookieArr = userCookie.split('@')
+        userCount = userCookieArr.length
     } else {
-        console.log('未找到zqkdFastKkzBody')
-        return false
+        console.log('未找到zqkdFastCookie')
     }
     
-    console.log(`共找到${userCount}个看看赚账户`)
+    if(rewardBody) {
+        rewardBodyArr = rewardBody.split('@')
+    } else {
+        console.log('未找到zqkdFastRewardBody')
+    }
+    
+    if(signBody) {
+        signBodyArr = signBody.split('@')
+    } else {
+        console.log('未找到zqkdFastSignBody')
+    }
+    
+    console.log(`共找到${userCount}个CK`)
     return true
 }
 
 async function GetRewrite() {
-    if($request.url.indexOf('Nameless') > -1 && $request.url.indexOf('adlickstart') > -1) {
+    if($request.url.indexOf('CommonReward/toGetReward') > -1) {
         let body = $request.body
+        let uid = body.match(/uid=(\w+)/)[1]
+        let action = body.match(/action=(\w+)/)[1]
+        let task = actionList[action]
+        if(!task) task = action
+        let uidStr = 'uid='+uid
+        
+        if(rewardBody) {
+            rewardBodyArr = rewardBody.split('@')
+            for(let i=0; i<rewardBodyArr.length; i++) {
+                let bodys = rewardBodyArr[i]
+                if((bodys.indexOf(uidStr) > -1) && (bodys.indexOf(action) > -1)) {
+                    console.log(`找到用户[${uid}]重复的任务【${task}】zqkdFastRewardBody: ${body}`)
+                    return;
+                }
+            }
+            //没有return，即新body
+            rewardBody = rewardBody + '@' + body
+            $.setdata(rewardBody, 'zqkdFastRewardBody');
+            $.msg(jsname+` 获取到用户[${uid}]任务【${task}】的zqkdFastRewardBody: ${body}`)
+        } else {
+            $.setdata(body, 'zqkdFastRewardBody');
+            $.msg(jsname+` 获取到用户[${uid}]任务【${task}】的zqkdFastRewardBody: ${body}`)
+        }
+    }
+    
+    if($request.url.indexOf('Task/sign.json') > -1) {
+        let url = $request.url
+        let body = url.split('sign.json?')[1]
         let uid = body.match(/uid=(\w+)/)[1]
         let uidStr = 'uid='+uid
         
-        if(userBody) {
-            if(userBody.indexOf(uidStr) == -1) {
-                userBody = userBody + '@' + body
-                $.setdata(userBody, 'zqkdFastKkzBody');
-                ckList = userBody.split('@')
-                $.msg(jsname+` 获取第${ckList.length}个zqkdFastKkzBody成功: ${body}`)
-            } else {
-                userBodyArr = userBody.split('@')
-                for(let i=0; i<userBodyArr.length; i++) {
-                    if(userBodyArr[i].indexOf(uidStr) > -1) {
-                        userBodyArr[i] = body
-                        break;
-                    }
-                }
-                userBody = userBodyArr.join('@')
-                $.setdata(userBody, 'zqkdFastKkzBody');
-                $.msg(jsname+` 找到重复的用户body: ${body}，将替换旧body`)
+        if(signBody) {
+            if(signBody.indexOf(uidStr) > -1) {
+                console.log(`找到用户[${uid}]重复的zqkdFastSignBody: ${body}`)
+                return;
             }
+            //没有return，即新body
+            signBody = signBody + '@' + body
+            $.setdata(signBody, 'zqkdFastSignBody');
+            $.msg(jsname+` 获取到用户[${uid}]的zqkdFastSignBody: ${body}`)
         } else {
-            $.setdata(body, 'zqkdFastKkzBody');
-            $.msg(jsname+` 获取第1个zqkdFastKkzBody成功: ${body}`)
+            $.setdata(body, 'zqkdFastSignBody');
+            $.msg(jsname+` 获取到用户[${uid}]的zqkdFastSignBody: ${body}`)
         }
     }
 }
 ///////////////////////////////////////////////////////////////////
-async function adlickstart(idx) {
+async function Sign(signUrl) {
     let caller = printCaller()
-    let body = userBodyArr[userIdx]
-    let uid = body.match(/uid=(\w+)/)[1]
-    let url = 'https://user.youth.cn/v1/Nameless/adlickstart.json'
-    let urlObject = populatePostUrl(url,body)
-    await httpPost(urlObject,caller)
+    let uid = signUrl.match(/uid=(\w+)/)[1]
+    let url = `https://user.youth.cn/FastApi/Task/sign.json?${signUrl}`
+    let urlObject = populateGetUrl(url)
+    await httpGet(urlObject,caller)
     let result = httpResult;
     if(!result) return
     
     if(result.error_code == 0) {
-        console.log(`用户${idx+1}[${uid}]开始看看赚任务[${result.items.banner_id}]`)
+        console.log(`用户[${uid}]签到获得${result.items.score}青豆`)
     } else {
-        console.log(`用户${idx+1}[${uid}]开始看看赚任务失败：${result.message}`)
+        console.log(`用户[${uid}]签到失败：${result.message}`)
     }
 }
 
-async function bannerstatus(idx) {
+async function ToGetReward(body) {
     let caller = printCaller()
-    let body = userBodyArr[userIdx]
     let uid = body.match(/uid=(\w+)/)[1]
-    let url = 'https://user.youth.cn/v1/Nameless/bannerstatus.json'
+    let action = body.match(/action=(\w+)/)[1]
+    let task = actionList[action]
+    if(!task) task = action
+    let url = `https://user.youth.cn/FastApi/CommonReward/toGetReward.json`
     let urlObject = populatePostUrl(url,body)
     await httpPost(urlObject,caller)
     let result = httpResult;
     if(!result) return
     
     if(result.error_code == 0) {
-        console.log(`用户${idx+1}[${uid}]阅读看看赚文章中[${result.items.banner_id}]`)
-    } else {
-        console.log(`用户${idx+1}[${uid}]阅读看看赚文章失败：${result.message}`)
-    }
-}
-
-async function adlickend(idx) {
-    let caller = printCaller()
-    let body = userBodyArr[userIdx]
-    let uid = body.match(/uid=(\w+)/)[1]
-    let url = 'https://user.youth.cn/v1/Nameless/adlickend.json'
-    let urlObject = populatePostUrl(url,body)
-    await httpPost(urlObject,caller)
-    let result = httpResult;
-    if(!result) return
-    
-    if(result.error_code == 0) {
-        console.log(`用户${idx+1}[${uid}]获得${result.items.score}青豆`)
-        if(result.items.score==0) {
-            stopFlag = 1
+        if(result.items.score) {
+            console.log(`用户[${uid}]完成【${task}】获得${result.items.score}青豆`)
+        } else if(result.items.left_time) {
+            console.log(`用户[${uid}]任务【${task}】冷却时间：${result.items.left_time}秒`)
         }
     } else {
-        console.log(`用户${idx+1}[${uid}]完成看看赚任务失败：${result.message}`)
-        stopFlag = 1
+        console.log(`用户[${uid}]完成【${task}】失败：${result.message}`)
     }
 }
 
+async function GetCoinInfo(uIdx) {
+    let caller = printCaller()
+    let userCk = userCookieArr[userIdx]
+    let url = `https://user.youth.cn/v1/user/userinfo.json?is_add_desktop=1&${userCk}&app_version=2.5.5&channel=c6001&device_model=OPPOR9tm&device_brand=OPPO&resolution=1080*1920&os_version=22&is_wxaccount=1&active_channel=c6001&access=wifi`
+    let urlObject = populateGetUrl(url)
+    await httpGet(urlObject,caller)
+    let result = httpResult;
+    if(!result) return
+    
+    if(result.error_code == 0) {
+        let nickname = result.items.nickname
+        let score = result.items.score
+        let money = result.items.money
+        let today_score = result.items.today_score
+        let uid = result.items.uid
+        let statusStr = (result.items.user_status==1) ? '正常' : '黑号'
+        console.log(`======== 用户${uIdx+1} ========`)
+        console.log(`【昵称】：${nickname}`)
+        console.log(`【ID】  ：${uid}`)
+        console.log(`【状态】  ：${statusStr}`)
+        console.log(`【青豆】：${score} ≈ ${money}元`)
+        console.log(`【今日收益】：${today_score}`)
+    } else {
+        console.log(`用户${uIdx+1} ${result.message}`)
+    }
+}
 ////////////////////////////////////////////////////////////////////
 function populatePostUrl(url,reqBody){
     let urlObject = {
