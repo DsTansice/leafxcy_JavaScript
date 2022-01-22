@@ -6,7 +6,8 @@
 每天签到1积分，分享一次5积分(每月有上限)
 20分换2京东E卡，100分换10元话费，200分换20元话费
 
-脚本内置多账号互相分享，内置帮助作者分享
+定时一天一次或者两次，最好不要用脚本里的默认定时
+比上一个版本脚本增加了多账号互相分享，内置助力作者
 后续看情况更新自动兑换
 
 青龙自己捉包，找fscrm.kraftheinz.net.cn的包，把header里的token填到变量kfxtoken里，多账户用@隔开
@@ -14,7 +15,7 @@
 V2P/圈X：
 [task_local]
 #卡夫享
-35 11,16 * * * https://raw.githubusercontent.com/leafxcy/JavaScript/main/kfx.js, tag=卡夫享, enabled=true
+50 8,20 * * * https://raw.githubusercontent.com/leafxcy/JavaScript/main/kfx.js, tag=卡夫享, enabled=true
 [rewrite_local]
 https://fscrm.kraftheinz.net.cn/crm/public/index.php/api/v1/getUserInfo url script-request-header https://raw.githubusercontent.com/leafxcy/JavaScript/main/kfx.js
 [MITM]
