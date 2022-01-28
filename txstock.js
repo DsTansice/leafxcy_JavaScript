@@ -183,6 +183,12 @@ var TxStockWxHeader
         //获取用户信息
         await initAccountInfo()
         
+        //测试用，勿打开
+        if(0) {
+            await getEnvParam(0)
+            await testFunction()
+        }
+        
         //新手任务
         await newbieTask()
         
@@ -191,8 +197,6 @@ var TxStockWxHeader
             await getEnvParam(numUser)
             
             $.log(`\n======= 开始腾讯自选股用户${numUser+1} ${nickname[numUser]} 日常任务 =======\n`)
-            
-            //await testFunction() //测试用，勿打开
             
             await signStatus(2002,0); //签到
             await $.wait(1000)
@@ -227,7 +231,7 @@ var TxStockWxHeader
 //测试用
 async function testFunction() {
     //扫描可查询的任务列表,
-    await scanAppTaskList(1000,2000,"task_daily","routine")
+    await scanAppTaskList(0,3000,"task_daily","routine")
     //await scanWxTaskList(1000,1400,"task_daily","routine") //每个大概花费86ms
 }
 
@@ -374,7 +378,8 @@ async function getEnvParam(userNum)
     
     app_openid = appUrlArrVal.match(/&openid=([\w-]+)/)[1]
     app_fskey = appUrlArrVal.match(/&fskey=([\w-]+)/)[1]
-    app_token = appUrlArrVal.match(/&access_token=([\w-]+)/)[1]
+    //app_token = appUrlArrVal.match(/&access_token=([\w-]+)/)[1]
+    app_token = ""
     app_appName = appUrlArrVal.match(/&_appName=([\w\.,-]+)/)[1]
     app_appver = appUrlArrVal.match(/&_appver=([\w\.,-]+)/)[1]
     app_osVer = appUrlArrVal.match(/&_osVer=([\w\.,-]+)/)[1]
@@ -2279,7 +2284,6 @@ async function appGuessRiseFall(answer,guessDate) {
                         let result = JSON.parse(data);
                         if(logDebug) console.log(result)
                         guessStr = (answer==1) ? "猜涨" : "猜跌"
-                        //guessOption = (raise < 0) ? 2 : 1
                         if(result.retcode == 0) {
                             $.log(`上证指数 猜涨跌成功：${guessStr}\n`);
                         } else {
