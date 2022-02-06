@@ -5,8 +5,9 @@ cron 18 0 * * * jd_xfxd.js
 活动入口：京东APP->我的->会员店->天天领京豆->幸福小店
 TG频道：https://t.me/tom_210120
 */
+
+const $ = new Env('京东幸福小店');
 const jsname = '京东幸福小店'
-const $ = Env(jsname)
 const logDebug = 0
 
 const notifyFlag = 1; //0为关闭通知，1为打开通知,默认为1
