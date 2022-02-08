@@ -86,6 +86,11 @@ class UserInfo {
         if(!result) return
         //console.log(result)
         if(result.errcode == 0) {
+            if(!result.data.link) {
+                console.log(`开始阅读失败：${result.data.msg}`)
+                this.flag = false
+                return;
+            }
             this.wxAuthLink = result.data.link
             let durl = decodeURIComponent(this.wxAuthLink).split('jump?')[1]
             let urlJSON = req2json(durl)
