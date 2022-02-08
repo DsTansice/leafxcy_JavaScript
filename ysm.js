@@ -59,46 +59,6 @@ class UserInfo {
         this.wxReplyLink = ''
     }
     
-    async getGold() {
-        if(!this.unionid) return;
-        let nowtime = new Date().getTime()
-        let url = `http://${ysmHost}/yunonline/v1/gold?unionid=${this.unionid}&time=${nowtime}`
-        let host = url.replace('//','/').split('/')[1]
-        let urlObject = {
-            url: url,
-            headers: {
-                'Host': host,
-                'Accept' : 'application/json, text/javascript, */*; q=0.01',
-                'Connection' : 'keep-alive',
-                'X-Requested-With' : 'XMLHttpRequest',
-                'Accept-Language' : 'zh-CN,zh-Hans;q=0.9',
-                'Accept-Encoding' : 'gzip, deflate',
-                'Origin' : `http://${ysmHost}`,
-                'User-Agent' : 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.18(0x1800122a) NetType/WIFI Language/zh_CN',
-                'Connection' : 'keep-alive',
-            },
-        }
-        await httpRequest('get',urlObject)
-        if(!httpResult || httpResult.statusCode != 200) {this.flag=false;return;}
-        let result = JSON.parse(httpResult.body);
-        if(!result) return
-        //console.log(result)
-        if(result.errcode == 0) {
-            this.gold = result.data.last_gold
-            console.log(`今天收益${result.data.day_gold}，剩余金币${result.data.last_gold}。已阅读${result.data.day_read}/剩余${result.data.remain_read}次`)
-            /*if(this.gold>=3000) {
-                console.log('准备提现...')
-                await $.wait(1000)
-                await this.withdraw()
-            } else {
-                console.log('余额不足，不提现')
-            }*/
-        } else {
-            console.log(`查询收益失败：${result.msg}`)
-            this.flag = false
-        }
-    }
-    
     async startRead() {
         let url = `http://${ysmHost}/yunonline/v1/task`
         let body = this.readSecret
@@ -246,9 +206,108 @@ class UserInfo {
         }
     }
     
-    async withdraw() {
+    async getGold() {
+        if(!this.unionid) return;
+        let nowtime = new Date().getTime()
+        let url = `http://${ysmHost}/yunonline/v1/gold?unionid=${this.unionid}&time=${nowtime}`
+        let host = url.replace('//','/').split('/')[1]
+        let urlObject = {
+            url: url,
+            headers: {
+                'Host': host,
+                'Accept' : 'application/json, text/javascript, */*; q=0.01',
+                'Connection' : 'keep-alive',
+                'X-Requested-With' : 'XMLHttpRequest',
+                'Accept-Language' : 'zh-CN,zh-Hans;q=0.9',
+                'Accept-Encoding' : 'gzip, deflate',
+                'Origin' : `http://${ysmHost}`,
+                'User-Agent' : 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.18(0x1800122a) NetType/WIFI Language/zh_CN',
+                'Connection' : 'keep-alive',
+            },
+        }
+        await httpRequest('get',urlObject)
+        if(!httpResult || httpResult.statusCode != 200) {this.flag=false;return;}
+        let result = JSON.parse(httpResult.body);
+        if(!result) return
+        //console.log(result)
+        if(result.errcode == 0) {
+            this.gold = result.data.last_gold
+            console.log(`今天收益${result.data.day_gold}，剩余金币${result.data.last_gold}。已阅读${result.data.day_read}/剩余${result.data.remain_read}次`)
+            if(this.gold>=3000) {
+                let gold = Math.floor(this.gold/1000)*1000
+                console.log(`准备提现${gold/10000}元...`)
+                await $.wait(1000)
+                await this.exchange(gold)
+            } else {
+                console.log('余额不足，不提现')
+            }
+        } else {
+            console.log(`查询收益失败：${result.msg}`)
+            this.flag = false
+        }
+    }
+    
+    async exchange(gold) {
+        let reqId = randomString(32)
+        let url = `http://erd.heysida.top/yunonline/v1/exchange?unionid=${this.unionid}&request_id=${reqId}&qrcode_number=ysm8`
+        let host = url.replace('//','/').split('/')[1]
+        let urlObject = {
+            url: url,
+            headers: {
+                'Host': host,
+                'Accept' : 'application/json, text/javascript, */*; q=0.01',
+                'Connection' : 'keep-alive',
+                'X-Requested-With' : 'XMLHttpRequest',
+                'Accept-Language' : 'zh-CN,zh-Hans;q=0.9',
+                'Accept-Encoding' : 'gzip, deflate',
+                'Origin' : `http://${ysmHost}`,
+                'User-Agent' : 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.18(0x1800122a) NetType/WIFI Language/zh_CN',
+                'Connection' : 'keep-alive',
+            },
+        }
+        await httpRequest('get',urlObject)
+        if(!httpResult || httpResult.statusCode != 200) return;
+        await $.wait(300)
+        await this.userGold(reqId,gold)
+    }
+    
+    async userGold(reqId,gold) {
+        let url = `http://erd.heysida.top/yunonline/v1/user_gold`
+        let body = `unionid=${this.unionid}&request_id=${reqId}&gold=${gold}`
+        let host = url.replace('//','/').split('/')[1]
+        let urlObject = {
+            url: url,
+            headers: {
+                'Host': host,
+                'Accept' : 'application/json, text/javascript, */*; q=0.01',
+                'Connection' : 'keep-alive',
+                'X-Requested-With' : 'XMLHttpRequest',
+                'Accept-Language' : 'zh-CN,zh-Hans;q=0.9',
+                'Accept-Encoding' : 'gzip, deflate',
+                'Content-Type' : 'application/x-www-form-urlencoded; charset=UTF-8',
+                'Origin' : `http://${ysmHost}`,
+                'User-Agent' : 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.18(0x1800122a) NetType/WIFI Language/zh_CN',
+                'Connection' : 'keep-alive',
+                'Content-Length' : body.length,
+            },
+            body: body,
+        }
+        await httpRequest('post',urlObject)
+        if(!httpResult || httpResult.statusCode != 200) return;
+        let result = JSON.parse(httpResult.body);
+        if(!result) return
+        //console.log(result)
+        if(result.errcode == 0) {
+            await $.wait(300)
+            await this.withdraw(reqId,result.data.money)
+        } else {
+            console.log(`提现失败：${result.msg}`)
+        }
+    }
+    
+    async withdraw(reqId,money) {
         let url = `http://${ysmHost}/yunonline/v1/withdraw`
-        let body = `unionid=${this.unionid}&request_id=${randomString(32)}&ua=1`
+        let body = `unionid=${this.unionid}&request_id=${reqId}&ua=1`
         let host = url.replace('//','/').split('/')[1]
         let urlObject = {
             url: url,
@@ -273,8 +332,7 @@ class UserInfo {
         if(!result) return
         //console.log(result)
         if(result.errcode == 0) {
-            this.gold = result.data.last_gold
-            console.log(`提现成功`)
+            console.log(`成功提现${money}元`)
         } else {
             console.log(`提现失败：${result.msg}`)
         }
